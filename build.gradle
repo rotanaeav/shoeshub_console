@@ -10,7 +10,23 @@ repositories {
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:6.0.0')
+    // PostgreSQL JDBC Driver
+    implementation 'org.postgresql:postgresql:42.7.13'
+
+    // Console Table Formatter
+    implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
+
+    // BCrypt Password Hashing
+    implementation 'org.mindrot:jbcrypt:0.4'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.48'
+    annotationProcessor 'org.projectlombok:lombok:1.18.48'
+    testCompileOnly 'org.projectlombok:lombok:1.18.48'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.48'
+
+    // JUnit 5 Testing
+    testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
