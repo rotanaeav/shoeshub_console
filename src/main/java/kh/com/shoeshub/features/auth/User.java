@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Data
@@ -20,10 +20,10 @@ public class User {
     private String username;
     private String passwordHash;
     private String phone;
-    private LocalDate dateOfBirth;
+    private Date dateOfBirth;
     private String gender;
     private String address;
     private boolean active;
     private boolean deleted;
-    private OffsetDateTime createdAt;
+    private Timestamp createdAt;
 }

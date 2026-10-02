@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Data
@@ -20,5 +20,5 @@ public class Payment {
     private BigDecimal amount;
     private PaymentStatus status;
     private boolean deleted;
-    private OffsetDateTime createdAt;
+    private Timestamp createdAt;
 }

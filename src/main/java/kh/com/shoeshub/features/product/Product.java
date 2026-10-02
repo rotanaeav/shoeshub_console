@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Data
@@ -22,6 +22,6 @@ public class Product {
     private BigDecimal price;
     private boolean active;
     private boolean deleted;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,8 +20,8 @@ public class Order {
     private OrderStatus status;
     private BigDecimal totalAmount;
     private boolean deleted;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 
     // Optional list of order items for eager view
     private List<OrderItem> items;

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Data
@@ -19,5 +19,5 @@ public class Review {
     private Short rating; // 1 to 5
     private String comment;
     private boolean deleted;
-    private OffsetDateTime createdAt;
+    private Timestamp createdAt;
 }
