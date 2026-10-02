@@ -31,23 +31,23 @@ public class UserRepositoryImpl implements UserRepository {
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ) {
 
-            ps.setString(1, entity.getRole().name());
+            ps.setObject(1, entity.getRole().name(), Types.OTHER);
             ps.setString(2, entity.getFullName());
             ps.setString(3, entity.getUsername());
             ps.setString(4, entity.getPasswordHash());
             ps.setString(5, entity.getPhone());
-            ps.setDate(6, entity.getDateOfBirth());
+            ps.setObject(6, entity.getDateOfBirth());
             ps.setString(7, entity.getGender());
             ps.setString(8, entity.getAddress());
 
             ps.executeUpdate();
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
+
                 if (rs.next()) {
                     entity.setId(rs.getObject(1, UUID.class));
                 }
             }
-
 
             return entity;
 
@@ -79,7 +79,6 @@ public class UserRepositoryImpl implements UserRepository {
                 PreparedStatement ps = conn.prepareStatement(sql)
         ) {
             ps.setObject(1, id);
-
 
             try (ResultSet rs = ps.executeQuery()) {
 
@@ -218,7 +217,7 @@ public class UserRepositoryImpl implements UserRepository {
             ps.setString(1, entity.getFullName());
             ps.setString(2, entity.getUsername());
             ps.setString(3, entity.getPhone());
-            ps.setDate(4, entity.getDateOfBirth());
+            ps.setObject(4, entity.getDateOfBirth());
             ps.setString(5, entity.getGender());
             ps.setString(6, entity.getAddress());
             ps.setObject(7, id);

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -14,13 +15,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
+
     private UUID id;
     private UserRole role;
     private String fullName;
     private String username;
     private String passwordHash;
     private String phone;
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
     private String gender;
     private String address;
     private boolean active;
