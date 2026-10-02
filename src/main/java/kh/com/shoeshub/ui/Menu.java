@@ -29,11 +29,11 @@ public class Menu {
      * 1. Public / Guest Menu (Main Switch)
      */
     public static void displayMainMenu() {
-        OutputUtil.printHeader("ShoesHub E-Commerce System");
+        OutputUtil.printBanner();
 
         while (true) {
-            OutputUtil.printSubHeader("MAIN MENU");
-            OutputUtil.println(" [1] Browse Products Catalog");
+            OutputUtil.printHeader("MAIN MENU");
+            OutputUtil.println(" [1] Browse Products");
             OutputUtil.println(" [2] Search Products");
             OutputUtil.println(" [3] Login");
             OutputUtil.println(" [4] Register");
@@ -47,7 +47,7 @@ public class Menu {
                 case 3 -> userController.handleLogin();
                 case 4 -> userController.handleRegister();
                 case 0 -> {
-                    OutputUtil.printSuccess("Thank you for visiting ShoesHub. Goodbye!");
+                    OutputUtil.printSuccess("Thank you. Goodbye!");
                     return;
                 }
                 default -> OutputUtil.printError("Invalid menu choice.");
@@ -57,7 +57,7 @@ public class Menu {
 
     public static void displayCustomerMenu() {
         while (true) {
-            OutputUtil.printSubHeader("CUSTOMER DASHBOARD");
+            OutputUtil.printHeader("CUSTOMER DASHBOARD");
             OutputUtil.println(" [1] Browse Shoes Catalog");
             OutputUtil.println(" [2] My Shopping Cart & Checkout");
             OutputUtil.println(" [3] My Wishlist");
@@ -88,7 +88,7 @@ public class Menu {
 
     public static void displayAdminMenu() {
         while (true) {
-            OutputUtil.printSubHeader("ADMIN DASHBOARD");
+            OutputUtil.printHeader("ADMIN DASHBOARD");
             OutputUtil.println(" [1] User Management (Create Admin/Seller, Manage Accounts)");
             OutputUtil.println(" [2] Product Management (CRUD & Stock)");
             OutputUtil.println(" [3] Category Management");
@@ -117,7 +117,7 @@ public class Menu {
 
     public static void displaySellerMenu() {
         while (true) {
-            OutputUtil.printSubHeader("SELLER DASHBOARD");
+            OutputUtil.printHeader("SELLER DASHBOARD");
             OutputUtil.println(" [1] Product Management (CRUD & Stock)");
             OutputUtil.println(" [2] Category Management");
             OutputUtil.println(" [3] Order Management & Status Updates");

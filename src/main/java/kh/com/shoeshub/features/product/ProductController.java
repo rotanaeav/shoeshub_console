@@ -2,6 +2,8 @@ package kh.com.shoeshub.features.product;
 
 import kh.com.shoeshub.features.product.service.ProductService;
 import kh.com.shoeshub.features.product.service.ProductServiceImpl;
+import kh.com.shoeshub.utils.InputUtil;
+import kh.com.shoeshub.utils.OutputUtil;
 
 public class ProductController {
 
@@ -17,7 +19,9 @@ public class ProductController {
             var products = productService.getAllProducts();
             productUI.displayProducts(products);
         } catch (Exception e) {
-            System.err.println("Error loading products: " + e.getMessage());
+            OutputUtil.printError("Error loading products: " + e.getMessage());
+        } finally {
+            InputUtil.pressEnter();
         }
     }
 
