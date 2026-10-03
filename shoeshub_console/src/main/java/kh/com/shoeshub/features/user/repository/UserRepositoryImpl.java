@@ -3,6 +3,7 @@ package kh.com.shoeshub.features.user.repository;
 import kh.com.shoeshub.common.RowMapper;
 import kh.com.shoeshub.config.DBConfig;
 import kh.com.shoeshub.features.user.User;
+import kh.com.shoeshub.features.user.mapper.UserRowMapper;
 
 import java.sql.*;
 import java.util.*;

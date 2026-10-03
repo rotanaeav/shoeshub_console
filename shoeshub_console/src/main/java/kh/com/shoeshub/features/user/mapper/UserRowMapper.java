@@ -1,10 +1,9 @@
-package kh.com.shoeshub.features.user.repository;
+package kh.com.shoeshub.features.user.mapper;
 
 import kh.com.shoeshub.common.RowMapper;
 import kh.com.shoeshub.features.user.User;
 import kh.com.shoeshub.features.user.UserRole;
 
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
