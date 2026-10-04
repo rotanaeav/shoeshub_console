@@ -21,9 +21,6 @@ public class UserValidator {
         if (request == null) {
             throw new IllegalArgumentException("User cannot be null");
         }
-
-        validateUsername(request.username());
-        validatePhoneNumber(request.phone());
     }
 
     private void validateUsername(String username) {

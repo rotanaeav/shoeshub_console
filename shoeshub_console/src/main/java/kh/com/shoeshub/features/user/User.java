@@ -14,6 +14,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class User {
 
     private UUID id;
@@ -28,4 +29,5 @@ public class User {
     private boolean active;
     private boolean deleted;
     private Timestamp createdAt;
+
 }

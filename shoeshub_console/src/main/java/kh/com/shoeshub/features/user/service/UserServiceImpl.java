@@ -2,6 +2,7 @@ package kh.com.shoeshub.features.user.service;
 
 import kh.com.shoeshub.exception.NotFoundException;
 import kh.com.shoeshub.features.user.User;
+import kh.com.shoeshub.features.user.UserRole;
 import kh.com.shoeshub.features.user.dto.CreateUserRequest;
 import kh.com.shoeshub.features.user.dto.UpdateUserRequest;
 import kh.com.shoeshub.features.user.dto.UserResponse;
@@ -10,10 +11,10 @@ import kh.com.shoeshub.features.user.repository.UserRepository;
 import kh.com.shoeshub.features.user.repository.UserRepositoryImpl;
 import kh.com.shoeshub.utils.PasswordUtil;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class UserServiceImpl implements UserService {
 
@@ -39,6 +40,11 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.toEntity(request);
 
         user.setPasswordHash(PasswordUtil.hashPassword(request.password()));
+        user.setRole(UserRole.CUSTOMER);
+
+        Timestamp sqlTimestamp = new Timestamp(System.currentTimeMillis());
+
+        user.setCreatedAt(sqlTimestamp);
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
@@ -97,7 +103,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse restoreUser(UUID id) {
 
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdIncludeDeleted(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         if (!user.isDeleted()) {
@@ -118,7 +124,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void permanentDeleteUser(UUID id) {
-        User user = (userRepository.findById(id).orElseThrow(() -> {
+        User user = (userRepository.findByIdIncludeDeleted(id).orElseThrow(() -> {
             throw new NotFoundException("User not found");
         }));
 

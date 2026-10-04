@@ -1,10 +1,13 @@
 package kh.com.shoeshub;
 
-import kh.com.shoeshub.ui.Menu;
+
+import kh.com.shoeshub.features.auth.AuthUI;
+import kh.com.shoeshub.features.user.UserUI;
 
 public class Main {
 
-     static void main() {
-        Menu.displayMainMenu();
+    static void main() {
+        new AuthUI();
+        new UserUI();
     }
 }

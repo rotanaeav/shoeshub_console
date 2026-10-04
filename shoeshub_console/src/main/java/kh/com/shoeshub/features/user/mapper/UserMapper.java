@@ -6,6 +6,8 @@ import kh.com.shoeshub.features.user.dto.UpdateUserRequest;
 import kh.com.shoeshub.features.user.dto.UserResponse;
 import kh.com.shoeshub.utils.PasswordUtil;
 
+import java.util.Locale;
+
 public class UserMapper {
     public User toEntity(CreateUserRequest request) {
         User user = new User();
@@ -26,6 +28,10 @@ public class UserMapper {
             user.setFullName(request.fullName());
         }
 
+        if (request.username() != null) {
+            user.setUsername(request.username());
+        }
+
         if (request.phone() != null) {
             user.setPhone(request.phone());
         }
@@ -35,7 +41,7 @@ public class UserMapper {
         }
 
         if (request.gender() != null) {
-            user.setGender(request.gender());
+            user.setGender(request.gender().toUpperCase(Locale.ROOT));
         }
 
         if (request.address() != null) {

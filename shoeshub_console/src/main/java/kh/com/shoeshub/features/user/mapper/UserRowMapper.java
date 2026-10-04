@@ -20,10 +20,13 @@ public class UserRowMapper implements RowMapper<User> {
         user.setRole(UserRole.valueOf(rs.getString("role")));
         user.setFullName(rs.getString("full_name"));
         user.setUsername(rs.getString("username"));
+        user.setPasswordHash(rs.getString("password_hash"));
         user.setPhone(rs.getString("phone"));
         user.setDateOfBirth(rs.getObject("date_of_birth", LocalDate.class));
         user.setGender(rs.getString("gender"));
         user.setAddress(rs.getString("address"));
+        user.setDeleted(rs.getBoolean("is_deleted"));
+        user.setCreatedAt(rs.getTimestamp("created_at"));
 
         return user;
     }

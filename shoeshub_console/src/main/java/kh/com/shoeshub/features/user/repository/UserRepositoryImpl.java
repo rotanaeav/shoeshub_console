@@ -6,6 +6,7 @@ import kh.com.shoeshub.features.user.User;
 import kh.com.shoeshub.features.user.mapper.UserRowMapper;
 
 import java.sql.*;
+import java.time.Instant;
 import java.util.*;
 
 public class UserRepositoryImpl implements UserRepository {
@@ -23,9 +24,10 @@ public class UserRepositoryImpl implements UserRepository {
                     phone,
                     date_of_birth,
                     gender,
-                    address
+                    address,
+                    created_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (
                 Connection conn = DBConfig.getInstance().getConnection();
@@ -40,6 +42,7 @@ public class UserRepositoryImpl implements UserRepository {
             ps.setObject(6, entity.getDateOfBirth());
             ps.setString(7, entity.getGender());
             ps.setString(8, entity.getAddress());
+            ps.setTimestamp(9, entity.getCreatedAt());
 
             ps.executeUpdate();
 
@@ -66,10 +69,13 @@ public class UserRepositoryImpl implements UserRepository {
                     role,
                     full_name,
                     username,
+                    password_hash,
                     phone,
                     date_of_birth,
                     gender,
-                    address
+                    address,
+                    is_deleted,
+                    created_at
                 FROM users
                 WHERE id = ?
                 AND is_deleted = FALSE
@@ -102,10 +108,13 @@ public class UserRepositoryImpl implements UserRepository {
                     role,
                     full_name,
                     username,
+                    password_hash,
                     phone,
                     date_of_birth,
                     gender,
-                    address
+                    address,
+                    is_deleted,
+                    created_at
                 FROM users
                 WHERE username = ?
                 AND is_deleted = FALSE
@@ -139,10 +148,13 @@ public class UserRepositoryImpl implements UserRepository {
                     role,
                     full_name,
                     username,
+                    password_hash,
                     phone,
                     date_of_birth,
                     gender,
-                    address
+                    address,
+                    is_deleted,
+                    created_at
                 FROM users
                 WHERE id = ?
                 """;
@@ -175,10 +187,13 @@ public class UserRepositoryImpl implements UserRepository {
                     role,
                     full_name,
                     username,
+                    password_hash,
                     phone,
                     date_of_birth,
                     gender,
-                    address
+                    address,
+                    is_deleted,
+                    created_at
                 FROM users
                 WHERE is_deleted = FALSE
                 """;
@@ -229,6 +244,8 @@ public class UserRepositoryImpl implements UserRepository {
                 return null;
             }
 
+            entity.setId(id);
+
             return entity;
 
         } catch (SQLException e) {
@@ -269,32 +286,23 @@ public class UserRepositoryImpl implements UserRepository {
                 SET is_deleted = FALSE
                 WHERE id = ?
                 AND is_deleted = TRUE
-                RETURNING
-                    id,
-                    role,
-                    full_name,
-                    username,
-                    phone,
-                    date_of_birth,
-                    gender,
-                    address
+                RETURNING *
                 """;
 
         try (
                 Connection conn = DBConfig.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)
         ) {
-
             ps.setObject(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
-
                 if (rs.next()) {
+
                     return Optional.of(rowMapper.mapRow(rs));
                 }
-
                 return Optional.empty();
             }
+
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
