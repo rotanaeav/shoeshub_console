@@ -1,6 +1,6 @@
 package kh.com.shoeshub.ui;
 
-import kh.com.shoeshub.features.auth.UserController;
+import kh.com.shoeshub.config.ServiceProvider;
 import kh.com.shoeshub.features.cart.CartController;
 import kh.com.shoeshub.features.category.CategoryController;
 import kh.com.shoeshub.features.order.OrderController;
@@ -8,6 +8,7 @@ import kh.com.shoeshub.features.payment.PaymentController;
 import kh.com.shoeshub.features.product.ProductController;
 import kh.com.shoeshub.features.report.ReportController;
 import kh.com.shoeshub.features.review.ReviewController;
+import kh.com.shoeshub.features.user.UserController;
 import kh.com.shoeshub.features.wishlist.WishlistController;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
@@ -15,7 +16,7 @@ import kh.com.shoeshub.utils.OutputUtil;
 public class Menu {
 
     // Controllers
-    private static final UserController userController = new UserController();
+    private static final UserController userController = ServiceProvider.getUserController();
     private static final ProductController productController = new ProductController();
     private static final CategoryController categoryController = new CategoryController();
     private static final CartController cartController = new CartController();
