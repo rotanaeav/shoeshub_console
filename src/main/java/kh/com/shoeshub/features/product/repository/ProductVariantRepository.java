@@ -3,6 +3,7 @@ package kh.com.shoeshub.features.product.repository;
 import kh.com.shoeshub.common.CrudRepository;
 import kh.com.shoeshub.features.product.ProductVariant;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -12,4 +13,7 @@ public interface ProductVariantRepository extends CrudRepository<ProductVariant,
     List<ProductVariant> findByProductId(UUID productId);
     ProductVariant updateStock(UUID id, int newStock);
     boolean updateStockWithConnection(Connection conn, UUID id, int quantityToDeduct) throws SQLException;
+
+    boolean existsVariant(UUID productId, BigDecimal size, String color);
+//    List<ProductVariant> findLowStock(int threshold);
 }

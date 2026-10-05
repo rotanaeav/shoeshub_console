@@ -42,7 +42,7 @@ public class Menu {
             int choice = InputUtil.readInt("Choose menu", 0, 4);
 
             switch (choice) {
-                case 1 -> productController.handleListProducts();
+                case 1 -> productController.handleBrowseProducts();
                 case 2 -> productController.handleSearchProducts();
                 case 3 -> userController.handleLogin();
                 case 4 -> userController.handleRegister();
@@ -70,7 +70,8 @@ public class Menu {
             int choice = InputUtil.readInt("Choose menu", 0, 7);
 
             switch (choice) {
-                case 1 -> productController.handleListProducts();
+//                case 1 -> productController.handleListProducts();
+                case 1 -> productController.handleBrowseProducts();
                 case 2 -> cartController.handleViewCart();
                 case 3 -> wishlistController.handleViewWishlist();
                 case 4 -> orderController.handleViewOrderHistory();
@@ -101,8 +102,10 @@ public class Menu {
 
             switch (choice) {
                 case 1 -> userController.handleUserManagement(); // Admin-only privilege!
-                case 2 -> productController.handleCreateProduct();
-                case 3 -> categoryController.handleListCategories();
+//                case 2 -> productController.handleCreateProduct();
+//                case 3 -> categoryController.handleListCategories();
+                case 2 -> productController.showMenu();
+                case 3 -> categoryController.showMenu();
                 case 4 -> orderController.handleUpdateOrderStatus();
                 case 5 -> reportController.handleViewRevenue();
                 case 6 -> userController.handleViewProfile();
@@ -128,8 +131,10 @@ public class Menu {
             int choice = InputUtil.readInt("Choose menu", 0, 5);
 
             switch (choice) {
-                case 1 -> productController.handleCreateProduct();
-                case 2 -> categoryController.handleListCategories();
+//                case 1 -> productController.handleCreateProduct();
+//                case 2 -> categoryController.handleListCategories();
+                case 1 -> productController.showMenu();
+                case 2 -> categoryController.showMenu();
                 case 3 -> orderController.handleUpdateOrderStatus();
                 case 4 -> reportController.handleViewRevenue();
                 case 5 -> userController.handleViewProfile();
