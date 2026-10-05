@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/mini-project.iml" filepath="$PROJECT_DIR$/.idea/mini-project.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shoeshub_console.main.iml" filepath="$PROJECT_DIR$/.idea/modules/shoeshub_console.main.iml" />
     </modules>
   </component>
 </project>
