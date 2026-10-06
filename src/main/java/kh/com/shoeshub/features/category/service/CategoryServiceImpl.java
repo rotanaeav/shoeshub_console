@@ -13,9 +13,15 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository = new CategoryRepositoryImpl();
+    private final AuthorizationService authorizationService;
+
+    public CategoryServiceImpl(AuthorizationService authorizationService) {
+        this.authorizationService = authorizationService;
+    }
 
     @Override
     public Category createCategory(CreateCategoryRequest request) {
+        requireStaff();
         validate(request);
 
         if (categoryRepository.findByName(request.getName().trim()).isPresent()) {
@@ -46,6 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category updateCategory(Short id, CreateCategoryRequest request) {
+        requireStaff();
         Category existing = getCategoryById(id);
         validate(request);
 
@@ -63,6 +70,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(Short id) {
+        requireStaff();
         getCategoryById(id); // throws NotFoundException if missing
 
         if (categoryRepository.hasProducts(id)) {
@@ -72,6 +80,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     // ----------------------------------------------------------------- helpers
+
+    // Only ADMIN and SELLER may change categories (reading them is open to everyone)
+    private void requireStaff() {
+        authorizationService.requireAnyRole(UserRole.ADMIN, UserRole.SELLER);
+    }
 
     private void validate(CreateCategoryRequest request) {
         if (request == null) {

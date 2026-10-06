@@ -13,6 +13,7 @@ import kh.com.shoeshub.features.auth.UserRole;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,35 +21,34 @@ import java.util.stream.Collectors;
 
 public class ProductController {
 
-    private final ProductService productService = new ProductServiceImpl();
-    private final CategoryService categoryService = new CategoryServiceImpl();
+    private final ProductService productService;
+    private final CategoryService categoryService;
     private final ProductUI productUI = new ProductUI();
+
+    // Role checks happen inside the services.
+    public ProductController(AuthorizationService authorizationService) {
+        this.productService = new ProductServiceImpl(authorizationService);
+        this.categoryService = new CategoryServiceImpl(authorizationService);
+    }
 
     // Admin / seller: product management menu loop
     public void showMenu() {
-        try {
-            requireStaff();
-        } catch (AppException e) {
-            OutputUtil.printError(e.getMessage());
-            InputUtil.pressEnter();
-            return;
-        }
-
         boolean running = true;
         while (running) {
             productUI.displayProductMenu();
-            int choice = InputUtil.readInt("Choose an option", 0, 11);
+            int choice = InputUtil.readInt("Choose an option", 0, 10);
 
             switch (choice) {
                 case 1 -> handleListProducts();
                 case 2 -> handleSearchProducts();
                 case 3 -> handleFilterByCategory();
-                case 4 -> handleViewProductDetail();
-                case 5 -> handleCreateProduct();
-                case 6 -> handleUpdateProduct();
-                case 7 -> handleDeleteProduct();
-                case 8 -> handleAddVariant();
-                case 9 -> handleUpdateStock();
+                case 4 -> handleFilterByPrice();
+                case 5 -> handleViewProductDetail();
+                case 6 -> handleCreateProduct();
+                case 7 -> handleUpdateProduct();
+                case 8 -> handleDeleteProduct();
+                case 9 -> handleAddVariant();
+                case 10 -> handleUpdateStock();
                 case 0 -> running = false;
             }
         }
@@ -56,33 +56,16 @@ public class ProductController {
 
     // ------------------------------------------------- customer / guest browse
 
-    // Only ACTIVE products, with an option to see sizes and stock
-//    public void handleBrowseProducts() {
-//        run(() -> {
-//            Map<Short, String> names = categoryNames();
-//            List<Product> products = productService.getActiveProducts();
-//            productUI.displayProducts(products, names);
-//
-//            if (!products.isEmpty() && InputUtil.readConfirm("View sizes and stock of a product?")) {
-//                Product product = pickProduct(products, names);
-//                productUI.displayProductDetail(
-//                        product, productService.getVariantsByProductId(product.getId()), names);
-//            }
-//        });
-//    }
-
+    // Only ACTIVE products, each with its variants (size / color / stock)
     public void handleBrowseProducts() {
         run(() -> showProducts(productService.getActiveProducts()));
     }
 
     // ---------------------------------------------------------------- actions
 
-    // Admin view: active and inactive products
+    // Admin view: active and inactive products (the service checks the role)
     public void handleListProducts() {
-        run(() -> {
-            requireStaff();
-            showProducts(productService.getAllProducts());
-        });
+        run(() -> showProducts(productService.getAllProducts()));
     }
 
     public void handleSearchProducts() {
@@ -99,10 +82,16 @@ public class ProductController {
         });
     }
 
+    public void handleFilterByPrice() {
+        run(() -> {
+            BigDecimal min = BigDecimal.valueOf(InputUtil.readDouble("Minimum price ($)", 0));
+            BigDecimal max = BigDecimal.valueOf(InputUtil.readDouble("Maximum price ($)", 0));
+            showProducts(productService.filterProductsByPrice(min, max));
+        });
+    }
 
     public void handleViewProductDetail() {
         run(() -> {
-            requireStaff();
             Map<Short, String> names = categoryNames();
             Product product = pickProduct(productService.getAllProducts(), names);
             List<ProductVariant> variants = productService.getVariantsByProductId(product.getId());
@@ -112,7 +101,6 @@ public class ProductController {
 
     public void handleCreateProduct() {
         run(() -> {
-            requireStaff();
             CreateProductRequest request = productUI.getProductInput(loadCategories());
             Product saved = productService.createProduct(request);
             OutputUtil.printSuccess("Product created with SKU " + saved.getSku());
@@ -125,7 +113,6 @@ public class ProductController {
 
     public void handleUpdateProduct() {
         run(() -> {
-            requireStaff();
             Product product = pickProduct();
             OutputUtil.printInfo("Enter the new values for " + product.getSku() + " - " + product.getName());
             CreateProductRequest request = productUI.getProductInput(loadCategories());
@@ -136,7 +123,6 @@ public class ProductController {
 
     public void handleDeleteProduct() {
         run(() -> {
-            requireStaff();
             Product product = pickProduct();
             if (InputUtil.readConfirm("Delete '" + product.getName() + "' and all its variants?")) {
                 productService.deleteProduct(product.getId());
@@ -148,15 +134,11 @@ public class ProductController {
     }
 
     public void handleAddVariant() {
-        run(() -> {
-            requireStaff();
-            addVariantsTo(pickProduct());
-        });
+        run(() -> addVariantsTo(pickProduct()));
     }
 
     public void handleUpdateStock() {
         run(() -> {
-            requireStaff();
             Product product = pickProduct();
             ProductVariant variant = pickVariant(product.getId());
             int newStock = InputUtil.readInt("New stock quantity", 0, 100000);
@@ -165,29 +147,14 @@ public class ProductController {
         });
     }
 
-//    public void handleLowStock() {
-//        run(() -> {
-//            requireStaff();
-//            int threshold = InputUtil.readInt("Show variants with stock at or below", 0, 100000);
-//            List<ProductVariant> variants = productService.getLowStockVariants(threshold);
-//
-//            if (variants.isEmpty()) {
-//                OutputUtil.printInfo("No variants with stock at or below " + threshold + ".");
-//                return;
-//            }
-//            Map<UUID, Product> productsById = productService.getAllProducts().stream()
-//                    .collect(Collectors.toMap(Product::getId, p -> p));
-////            productUI.displayLowStock(variants, productsById);
-//        });
-//    }
-
     // ---------------------------------------------------------------- helpers
 
-    // Runs one menu action: shows errors nicely, then waits for ENTER
+    // Runs one menu action: shows errors nicely, then waits for ENTER.
+    // SecurityException comes from AuthorizationService (not logged in / no permission).
     private void run(Runnable action) {
         try {
             action.run();
-        } catch (AppException e) {
+        } catch (AppException | SecurityException e) {
             OutputUtil.printError(e.getMessage());
         } catch (Exception e) {
             OutputUtil.printError("Unexpected error: " + e.getMessage());
@@ -196,9 +163,9 @@ public class ProductController {
         }
     }
 
-    // Only admin and seller may manage products, categories and stock
-    private void requireStaff() {
-        Session.requireRole(UserRole.ADMIN, UserRole.SELLER);
+    private void showProducts(List<Product> products) {
+        productUI.displayProductsWithVariants(
+                products, categoryNames(), productService.getVariantsGroupedByProduct());
     }
 
     // category id -> category name, used by the tables
@@ -245,10 +212,4 @@ public class ProductController {
             OutputUtil.printSuccess("Variant added to " + product.getSku() + ".");
         } while (InputUtil.readConfirm("Add another variant?"));
     }
-
-    private void showProducts(List<Product> products) {
-        productUI.displayProductsWithVariants(
-                products, categoryNames(), productService.getVariantsGroupedByProduct());
-    }
-
 }

@@ -25,10 +25,14 @@ public class ProductServiceImpl implements ProductService {
     private final ProductVariantRepository variantRepository = new ProductVariantRepositoryImpl();
 
     private final AuthorizationService authorizationService;
+    public ProductServiceImpl(AuthorizationService authorizationService) {
+        this.authorizationService = authorizationService;
+    }
     // ---------------------------------------------------------------- products
 
     @Override
     public Product createProduct(CreateProductRequest request) {
+        requireStaff();
         validateProductRequest(request);
 
         Product product = Product.builder()
@@ -42,7 +46,6 @@ public class ProductServiceImpl implements ProductService {
 
         return productRepository.save(product);
     }
-
     @Override
     public Product getProductById(UUID id) {
         if (id == null) {
@@ -55,6 +58,7 @@ public class ProductServiceImpl implements ProductService {
     // Admin view: every product that is not deleted (active and inactive)
     @Override
     public List<Product> getAllProducts() {
+        requireStaff();
         return productRepository.findAll();
     }
 
@@ -87,7 +91,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<Product> filterProductsByPrice(BigDecimal minPrice, BigDecimal maxPrice) {
+        if (minPrice == null || maxPrice == null) {
+            throw new ValidationException("Minimum and maximum price are required.");
+        }
+        if (minPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValidationException("Minimum price cannot be negative.");
+        }
+        if (maxPrice.compareTo(minPrice) < 0) {
+            throw new ValidationException("Maximum price must be greater than or equal to minimum price.");
+        }
+        return productRepository.findByPriceRange(minPrice, maxPrice).stream()
+                .filter(Product::isActive)
+                .toList();
+    }
+
+    @Override
     public Product updateProduct(UUID id, CreateProductRequest request) {
+        requireStaff();
         Product existing = getProductById(id);
         validateProductRequest(request);
 
@@ -102,6 +123,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(UUID id) {
+        requireStaff();
         getProductById(id); // throws NotFoundException if missing
 
         // Hide its variants too, so they can never be shown or sold
@@ -115,6 +137,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductVariant addVariant(ProductVariant variant) {
+        requireStaff();
         if (variant == null) {
             throw new ValidationException("Variant data is required.");
         }
@@ -150,8 +173,16 @@ public class ProductServiceImpl implements ProductService {
         return variantRepository.findByProductId(productId);
     }
 
+    // One query for all variants (used by the product list, so the screen stays fast)
+    @Override
+    public Map<UUID, List<ProductVariant>> getVariantsGroupedByProduct() {
+        return variantRepository.findAll().stream()
+                .collect(Collectors.groupingBy(ProductVariant::getProductId));
+    }
+
     @Override
     public void updateStock(UUID variantId, int newStock) {
+        requireStaff();
         if (variantId == null) {
             throw new ValidationException("Variant id is required.");
         }
@@ -160,20 +191,6 @@ public class ProductServiceImpl implements ProductService {
         }
         variantRepository.updateStock(variantId, newStock);
     }
-
-    @Override
-    public Map<UUID, List<ProductVariant>> getVariantsGroupedByProduct() {
-        return variantRepository.findAll().stream()
-                .collect(Collectors.groupingBy(ProductVariant::getProductId));
-    }
-
-//    @Override
-//    public List<ProductVariant> getLowStockVariants(int threshold) {
-//        if (threshold < 0) {
-//            throw new ValidationException("Threshold cannot be negative.");
-//        }
-//        return variantRepository.findLowStock(threshold);
-//    }
 
     // ----------------------------------------------------------------- helpers
 
@@ -202,7 +219,14 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    // Only ADMIN and SELLER may change products, variants and stock
+    private void requireStaff() {
+        authorizationService.requireAnyRole(UserRole.ADMIN, UserRole.SELLER);
+    }
+
     private String trimOrNull(String value) {
         return (value == null || value.isBlank()) ? null : value.trim();
     }
+
+
 }

@@ -84,7 +84,9 @@ public class ProductUI {
                 .build();
     }
 
-    //-----------------------------------------Display--------------------------
+    // ---------------------------------------------------------------- display
+    // categoryNames maps category id -> category name (built by the controller)
+
     public void displayProducts(List<Product> products, Map<Short, String> categoryNames) {
         renderProductTable(products, "PRODUCT LIST", false, false, categoryNames);
     }
@@ -134,71 +136,7 @@ public class ProductUI {
         TableUtil.render(table);
     }
 
-//    public void displayLowStock(List<ProductVariant> variants, Map<UUID, Product> productsById) {
-//        OutputUtil.printSubHeader("LOW STOCK REPORT");
-//        Table table = TableUtil.createTable(6, "#", "SKU", "PRODUCT", "SIZE", "COLOR", "STOCK");
-//
-//        int no = 1;
-//        for (ProductVariant v : variants) {
-//            Product p = productsById.get(v.getProductId());
-//            table.addCell(String.valueOf(no++));
-//            table.addCell(p != null ? p.getSku() : "-");
-//            table.addCell(p != null ? p.getName() : "-");
-//            table.addCell(v.getSize().stripTrailingZeros().toPlainString());
-//            table.addCell(v.getColor());
-//            table.addCell(String.valueOf(v.getStockQuantity()));
-//        }
-//        TableUtil.render(table);
-//    }
-
-    //--------------------------------------------
-
-    private void renderProductTable(List<Product> products, String title, boolean showId,
-                                    boolean numbered, Map<Short, String> categoryNames) {
-        if (products == null || products.isEmpty()) {
-            OutputUtil.printInfo("No products found in the catalog.");
-            return;
-        }
-
-        OutputUtil.printSubHeader(title);
-
-        List<String> headers = new ArrayList<>();
-        if (numbered) headers.add("#");
-        if (showId) headers.add("UUID");
-        headers.addAll(List.of("SKU", "NAME", "PRICE ($)", "CATEGORY", "STATUS"));
-
-        Table table = TableUtil.createTable(headers.size(), headers.toArray(new String[0]));
-
-        int no = 1;
-        for (Product p : products) {
-            if (numbered) {
-                table.addCell(String.valueOf(no++));
-            }
-            if (showId) {
-                table.addCell(p.getId() != null ? p.getId().toString() : "-");
-            }
-            table.addCell(p.getSku() != null ? p.getSku() : "-");
-            table.addCell(p.getName() != null ? p.getName() : "-");
-            table.addCell(p.getPrice() != null ? "$" + p.getPrice().toPlainString() : "$0.00");
-            table.addCell(categoryLabel(p, categoryNames));
-            table.addCell(p.isActive() ? "ACTIVE" : "INACTIVE");
-        }
-        TableUtil.render(table);
-    }
-
-    private String categoryLabel(Product p, Map<Short, String> categoryNames) {
-        if (p.getCategoryId() == null) {
-            return "-";
-        }
-        return categoryNames.getOrDefault(p.getCategoryId(), "ID " + p.getCategoryId());
-    }
-
-    private String stockStatus(int stock) {
-        if (stock == 0) return "OUT OF STOCK";
-        if (stock <= 5) return "LOW";
-        return "IN STOCK";
-    }
-
+    // One row per variant, product columns shown on the first row only
     public void displayProductsWithVariants(List<Product> products,
                                             Map<Short, String> categoryNames,
                                             Map<UUID, List<ProductVariant>> variantsByProduct) {
@@ -254,4 +192,51 @@ public class ProductUI {
         return String.valueOf(stock);
     }
 
+    // ---------------------------------------------------------------- helpers
+
+    private void renderProductTable(List<Product> products, String title, boolean showId,
+                                    boolean numbered, Map<Short, String> categoryNames) {
+        if (products == null || products.isEmpty()) {
+            OutputUtil.printInfo("No products found in the catalog.");
+            return;
+        }
+
+        OutputUtil.printSubHeader(title);
+
+        List<String> headers = new ArrayList<>();
+        if (numbered) headers.add("#");
+        if (showId) headers.add("UUID");
+        headers.addAll(List.of("SKU", "NAME", "PRICE ($)", "CATEGORY", "STATUS"));
+
+        Table table = TableUtil.createTable(headers.size(), headers.toArray(new String[0]));
+
+        int no = 1;
+        for (Product p : products) {
+            if (numbered) {
+                table.addCell(String.valueOf(no++));
+            }
+            if (showId) {
+                table.addCell(p.getId() != null ? p.getId().toString() : "-");
+            }
+            table.addCell(p.getSku() != null ? p.getSku() : "-");
+            table.addCell(p.getName() != null ? p.getName() : "-");
+            table.addCell(p.getPrice() != null ? "$" + p.getPrice().toPlainString() : "$0.00");
+            table.addCell(categoryLabel(p, categoryNames));
+            table.addCell(p.isActive() ? "ACTIVE" : "INACTIVE");
+        }
+        TableUtil.render(table);
+    }
+
+    private String categoryLabel(Product p, Map<Short, String> categoryNames) {
+        if (p.getCategoryId() == null) {
+            return "-";
+        }
+        return categoryNames.getOrDefault(p.getCategoryId(), "ID " + p.getCategoryId());
+    }
+
+    private String stockStatus(int stock) {
+        if (stock == 0) return "OUT OF STOCK";
+        if (stock <= 5) return "LOW";
+        return "IN STOCK";
+    }
 }

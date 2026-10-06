@@ -11,18 +11,15 @@ import kh.com.shoeshub.features.auth.UserRole;
 
 public class CategoryController {
 
-    private final CategoryService categoryService = new CategoryServiceImpl();
+    private final CategoryService categoryService;
     private final CategoryUI categoryUI = new CategoryUI();
 
-    public void showMenu() {
-        try {
-            requireStaff();
-        } catch (AppException e) {
-            OutputUtil.printError(e.getMessage());
-            InputUtil.pressEnter();
-            return;
-        }
+    // Role checks happen inside CategoryServiceImpl
+    public CategoryController(AuthorizationService authorizationService) {
+        this.categoryService = new CategoryServiceImpl(authorizationService);
+    }
 
+    public void showMenu() {
         boolean running = true;
         while (running) {
             categoryUI.displayCategoryMenu();
@@ -39,15 +36,11 @@ public class CategoryController {
     }
 
     public void handleListCategories() {
-        run(() -> {
-            requireStaff();
-            categoryUI.displayCategories(categoryService.getAllCategories());
-        });
+        run(() -> categoryUI.displayCategories(categoryService.getAllCategories()));
     }
 
     public void handleCreateCategory() {
         run(() -> {
-            requireStaff();
             CreateCategoryRequest request = categoryUI.getCategoryInput();
             Category saved = categoryService.createCategory(request);
             OutputUtil.printSuccess("Category '" + saved.getName() + "' created with ID " + saved.getId() + ".");
@@ -56,7 +49,6 @@ public class CategoryController {
 
     public void handleUpdateCategory() {
         run(() -> {
-            requireStaff();
             categoryUI.displayCategories(categoryService.getAllCategories());
             Short id = categoryUI.readCategoryId();
             Category existing = categoryService.getCategoryById(id);
@@ -70,7 +62,6 @@ public class CategoryController {
 
     public void handleDeleteCategory() {
         run(() -> {
-            requireStaff();
             categoryUI.displayCategories(categoryService.getAllCategories());
             Short id = categoryUI.readCategoryId();
             Category existing = categoryService.getCategoryById(id);
@@ -84,16 +75,12 @@ public class CategoryController {
         });
     }
 
-    // Only admin and seller may manage categories
-    private void requireStaff() {
-        Session.requireRole(UserRole.ADMIN, UserRole.SELLER);
-    }
-
-    // Runs one menu action: shows errors nicely, then waits for ENTER
+    // Runs one menu action: shows errors nicely, then waits for ENTER.
+    // SecurityException comes from AuthorizationService (not logged in / no permission).
     private void run(Runnable action) {
         try {
             action.run();
-        } catch (AppException e) {
+        } catch (AppException | SecurityException e) {
             OutputUtil.printError(e.getMessage());
         } catch (Exception e) {
             OutputUtil.printError("Unexpected error: " + e.getMessage());

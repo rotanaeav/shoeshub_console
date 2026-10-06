@@ -12,12 +12,21 @@ import kh.com.shoeshub.features.wishlist.WishlistController;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
 
+//import kh.com.shoeshub.authorize.AuthorizationService;
+//import kh.com.shoeshub.authorize.Security;
+
 public class Menu {
 
     // Controllers
+
+    private static final Security security = new Security();
+    private static final AuthorizationService authorizationService = new AuthorizationService(security);
+
     private static final UserController userController = new UserController();
-    private static final ProductController productController = new ProductController();
-    private static final CategoryController categoryController = new CategoryController();
+
+    private static final ProductController productController = new ProductController(authorizationService);
+    private static final CategoryController categoryController = new CategoryController(authorizationService);
+
     private static final CartController cartController = new CartController();
     private static final WishlistController wishlistController = new WishlistController();
     private static final OrderController orderController = new OrderController();
@@ -33,11 +42,13 @@ public class Menu {
 
         while (true) {
             OutputUtil.printHeader("MAIN MENU");
-            OutputUtil.println(" [1] Browse Products");
-            OutputUtil.println(" [2] Search Products");
-            OutputUtil.println(" [3] Login");
-            OutputUtil.println(" [4] Register");
-            OutputUtil.println(" [0] Exit Application");
+            OutputUtil.println("""
+                            [1] BROWSE PRODUCTS
+                            [2] SEARCH PRODUCTS
+                            [3] LOGIN
+                            [4] REGISTER
+                            [0] EXIT APPLICATION 
+                            """);
 
             int choice = InputUtil.readInt("Choose menu", 0, 4);
 
