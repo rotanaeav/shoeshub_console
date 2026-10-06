@@ -1,5 +1,6 @@
 package kh.com.shoeshub.features.category;
 
+import kh.com.shoeshub.authorize.AuthorizationService;
 import kh.com.shoeshub.exception.AppException;
 import kh.com.shoeshub.features.category.dto.CreateCategoryRequest;
 import kh.com.shoeshub.features.category.service.CategoryService;
@@ -7,7 +8,7 @@ import kh.com.shoeshub.features.category.service.CategoryServiceImpl;
 //import kh.com.shoeshub.features.user.UserRole;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
-import kh.com.shoeshub.features.auth.UserRole;
+import kh.com.shoeshub.features.user.UserRole;
 
 public class CategoryController {
 

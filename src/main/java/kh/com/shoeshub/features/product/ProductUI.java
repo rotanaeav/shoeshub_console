@@ -17,16 +17,17 @@ public class ProductUI {
         // TODO: Display Product management menu
         OutputUtil.printHeader("Product Management");
         OutputUtil.println("""
-                 [1]  LIST ALL PRODUCT
-                 [2]  SEARCH PRODUCTS BY NAME
-                 [3]  FILTER BY CATEGORY
-                 [4]  VIEW PRODUCT DETAILS
-                 [5]  ADD PRODUCT
-                 [6]  UPDATE PRODUCT
-                 [7]  DELETE PRODUCT
-                 [8]  ADD VARIANT (size / color / stock)
-                 [9] UPDATE STOCK
-                 [0]  BACK
+                [1]  LIST ALL PRODUCT
+                [2]  SEARCH PRODUCTS BY NAME
+                [3]  FILTER BY CATEGORY
+                [4]  VIEW PRODUCT DETAILS
+                [5]  ADD PRODUCT
+                [6]  UPDATE PRODUCT
+                [7]  DELETE PRODUCT
+                [8]  ADD VARIANT (size / color / stock)
+                [9]  UPDATE STOCK
+                [10] TOGGLE ACTIVE / INACTIVE
+                [0]  BACK
                  """);
 
     }
@@ -137,23 +138,33 @@ public class ProductUI {
     }
 
     // One row per variant, product columns shown on the first row only
+
+    // One row per variant, product columns shown on the first row only
     public void displayProductsWithVariants(List<Product> products,
                                             Map<Short, String> categoryNames,
-                                            Map<UUID, List<ProductVariant>> variantsByProduct) {
+                                            Map<UUID, List<ProductVariant>> variantsByProduct,
+                                            boolean showStatus) {
         if (products == null || products.isEmpty()) {
             OutputUtil.printInfo("No products found in the catalog.");
             return;
         }
 
         OutputUtil.printSubHeader("PRODUCT LIST");
-        Table table = TableUtil.createTable(8,
-                "SKU", "NAME", "PRICE ($)", "CATEGORY", "STATUS", "SIZE", "COLOR", "STOCK");
+
+        List<String> headers = new ArrayList<>(List.of("SKU", "NAME", "PRICE ($)", "CATEGORY"));
+        if (showStatus) {
+            headers.add("STATUS");
+        }
+        headers.addAll(List.of("SIZE", "COLOR", "STOCK"));
+        Table table = TableUtil.createTable(headers.size(), headers.toArray(new String[0]));
+
+        int productColumns = showStatus ? 5 : 4;
 
         for (Product p : products) {
             List<ProductVariant> variants = variantsByProduct.getOrDefault(p.getId(), List.of());
 
             if (variants.isEmpty()) {
-                addProductCells(table, p, categoryNames);
+                addProductCells(table, p, categoryNames, showStatus);
                 table.addCell("-");
                 table.addCell("-");
                 table.addCell("-");
@@ -163,9 +174,9 @@ public class ProductUI {
             boolean first = true;
             for (ProductVariant v : variants) {
                 if (first) {
-                    addProductCells(table, p, categoryNames);
+                    addProductCells(table, p, categoryNames, showStatus);
                 } else {
-                    for (int i = 0; i < 5; i++) {
+                    for (int i = 0; i < productColumns; i++) {
                         table.addCell(" ");   // keep the product columns empty
                     }
                 }
@@ -176,6 +187,16 @@ public class ProductUI {
             }
         }
         TableUtil.render(table);
+    }
+
+    private void addProductCells(Table table, Product p, Map<Short, String> categoryNames, boolean showStatus) {
+        table.addCell(p.getSku() != null ? p.getSku() : "-");
+        table.addCell(p.getName() != null ? p.getName() : "-");
+        table.addCell(p.getPrice() != null ? "$" + p.getPrice().toPlainString() : "$0.00");
+        table.addCell(categoryLabel(p, categoryNames));
+        if (showStatus) {
+            table.addCell(p.isActive() ? "ACTIVE" : "INACTIVE");
+        }
     }
 
     private void addProductCells(Table table, Product p, Map<Short, String> categoryNames) {

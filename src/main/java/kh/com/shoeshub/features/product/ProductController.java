@@ -8,25 +8,24 @@ import kh.com.shoeshub.features.category.service.CategoryServiceImpl;
 import kh.com.shoeshub.features.product.dto.CreateProductRequest;
 import kh.com.shoeshub.features.product.service.ProductService;
 import kh.com.shoeshub.features.product.service.ProductServiceImpl;
-//import kh.com.shoeshub.features.user.UserRole;
-import kh.com.shoeshub.features.auth.UserRole;
+import kh.com.shoeshub.authorize.AuthorizationService;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
-
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import kh.com.shoeshub.features.user.UserRole;
 
 public class ProductController {
 
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final AuthorizationService authorizationService;
     private final ProductUI productUI = new ProductUI();
 
-    // Role checks happen inside the services.
     public ProductController(AuthorizationService authorizationService) {
+        this.authorizationService = authorizationService;
         this.productService = new ProductServiceImpl(authorizationService);
         this.categoryService = new CategoryServiceImpl(authorizationService);
     }
@@ -42,13 +41,13 @@ public class ProductController {
                 case 1 -> handleListProducts();
                 case 2 -> handleSearchProducts();
                 case 3 -> handleFilterByCategory();
-                case 4 -> handleFilterByPrice();
-                case 5 -> handleViewProductDetail();
-                case 6 -> handleCreateProduct();
-                case 7 -> handleUpdateProduct();
-                case 8 -> handleDeleteProduct();
-                case 9 -> handleAddVariant();
-                case 10 -> handleUpdateStock();
+                case 4 -> handleViewProductDetail();
+                case 5 -> handleCreateProduct();
+                case 6 -> handleUpdateProduct();
+                case 7 -> handleDeleteProduct();
+                case 8 -> handleAddVariant();
+                case 9 -> handleUpdateStock();
+                case 10 -> handleToggleActive();
                 case 0 -> running = false;
             }
         }
@@ -56,39 +55,32 @@ public class ProductController {
 
     // ------------------------------------------------- customer / guest browse
 
-    // Only ACTIVE products, each with its variants (size / color / stock)
+    // Customer / guest browse: active products only, no STATUS column
     public void handleBrowseProducts() {
-        run(() -> showProducts(productService.getActiveProducts()));
+        run(() -> showProducts(productService.getActiveProducts(), false));
     }
 
-    // ---------------------------------------------------------------- actions
-
-    // Admin view: active and inactive products (the service checks the role)
+    // Staff list: everything, with STATUS
     public void handleListProducts() {
-        run(() -> showProducts(productService.getAllProducts()));
+        run(() -> showProducts(productService.getAllProducts(), true));
     }
 
+    // Search and filter: staff see STATUS, customers and guests don't
     public void handleSearchProducts() {
         run(() -> {
             String keyword = InputUtil.readRequiredText("Search keyword");
-            showProducts(productService.searchProducts(keyword));
+            showProducts(productService.searchProducts(keyword), isStaff());
         });
     }
 
     public void handleFilterByCategory() {
         run(() -> {
             Short categoryId = productUI.readCategoryId(loadCategories());
-            showProducts(productService.getProductsByCategory(categoryId));
+            showProducts(productService.getProductsByCategory(categoryId), isStaff());
         });
     }
 
-    public void handleFilterByPrice() {
-        run(() -> {
-            BigDecimal min = BigDecimal.valueOf(InputUtil.readDouble("Minimum price ($)", 0));
-            BigDecimal max = BigDecimal.valueOf(InputUtil.readDouble("Maximum price ($)", 0));
-            showProducts(productService.filterProductsByPrice(min, max));
-        });
-    }
+    // ---------------------------------------------------------------- actions
 
     public void handleViewProductDetail() {
         run(() -> {
@@ -147,6 +139,22 @@ public class ProductController {
         });
     }
 
+    public void handleToggleActive() {
+        run(() -> {
+            Product product = pickProduct();
+            boolean newState = !product.isActive();
+            String action = newState ? "Activate" : "Deactivate";
+
+            if (InputUtil.readConfirm(action + " '" + product.getName() + "'?")) {
+                productService.setActive(product.getId(), newState);
+                OutputUtil.printSuccess("Product " + product.getSku() + " is now "
+                        + (newState ? "ACTIVE" : "INACTIVE") + ".");
+            } else {
+                OutputUtil.printInfo("Cancelled.");
+            }
+        });
+    }
+
     // ---------------------------------------------------------------- helpers
 
     // Runs one menu action: shows errors nicely, then waits for ENTER.
@@ -163,9 +171,9 @@ public class ProductController {
         }
     }
 
-    private void showProducts(List<Product> products) {
+    private void showProducts(List<Product> products, boolean showStatus) {
         productUI.displayProductsWithVariants(
-                products, categoryNames(), productService.getVariantsGroupedByProduct());
+                products, categoryNames(), productService.getVariantsGroupedByProduct(), showStatus);
     }
 
     // category id -> category name, used by the tables
@@ -211,5 +219,13 @@ public class ProductController {
             productService.addVariant(variant);
             OutputUtil.printSuccess("Variant added to " + product.getSku() + ".");
         } while (InputUtil.readConfirm("Add another variant?"));
+    }
+    private boolean isStaff() {
+        try {
+            authorizationService.requireAnyRole(UserRole.ADMIN, UserRole.SELLER);
+            return true;
+        } catch (SecurityException e) {
+            return false;
+        }
     }
 }

@@ -9,7 +9,8 @@ import kh.com.shoeshub.features.product.repository.ProductRepository;
 import kh.com.shoeshub.features.product.repository.ProductRepositoryImpl;
 import kh.com.shoeshub.features.product.repository.ProductVariantRepository;
 import kh.com.shoeshub.features.product.repository.ProductVariantRepositoryImpl;
-
+import kh.com.shoeshub.authorize.AuthorizationService;
+import kh.com.shoeshub.features.user.UserRole;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -75,8 +76,9 @@ public class ProductServiceImpl implements ProductService {
         if (keyword == null || keyword.isBlank()) {
             throw new ValidationException("Search keyword cannot be empty.");
         }
+        boolean staff = isStaff();
         return productRepository.searchByName(keyword.trim()).stream()
-                .filter(Product::isActive)
+                .filter(p -> staff || p.isActive())
                 .toList();
     }
 
@@ -85,24 +87,9 @@ public class ProductServiceImpl implements ProductService {
         if (categoryId == null || categoryId <= 0) {
             throw new ValidationException("Category id must be greater than 0.");
         }
+        boolean staff = isStaff();
         return productRepository.findByCategoryId(categoryId).stream()
-                .filter(Product::isActive)
-                .toList();
-    }
-
-    @Override
-    public List<Product> filterProductsByPrice(BigDecimal minPrice, BigDecimal maxPrice) {
-        if (minPrice == null || maxPrice == null) {
-            throw new ValidationException("Minimum and maximum price are required.");
-        }
-        if (minPrice.compareTo(BigDecimal.ZERO) < 0) {
-            throw new ValidationException("Minimum price cannot be negative.");
-        }
-        if (maxPrice.compareTo(minPrice) < 0) {
-            throw new ValidationException("Maximum price must be greater than or equal to minimum price.");
-        }
-        return productRepository.findByPriceRange(minPrice, maxPrice).stream()
-                .filter(Product::isActive)
+                .filter(p -> staff || p.isActive())
                 .toList();
     }
 
@@ -191,6 +178,13 @@ public class ProductServiceImpl implements ProductService {
         }
         variantRepository.updateStock(variantId, newStock);
     }
+    @Override
+    public Product setActive(UUID id, boolean active) {
+        requireStaff();
+        Product existing = getProductById(id);
+        existing.setActive(active);
+        return productRepository.update(id, existing);
+    }
 
     // ----------------------------------------------------------------- helpers
 
@@ -222,6 +216,17 @@ public class ProductServiceImpl implements ProductService {
     // Only ADMIN and SELLER may change products, variants and stock
     private void requireStaff() {
         authorizationService.requireAnyRole(UserRole.ADMIN, UserRole.SELLER);
+    }
+
+    // true if the current user is ADMIN or SELLER (used to decide who sees inactive products)
+    // true if the current user is ADMIN or SELLER (decides who can see inactive products)
+    private boolean isStaff() {
+        try {
+            requireStaff();
+            return true;
+        } catch (SecurityException e) {
+            return false;
+        }
     }
 
     private String trimOrNull(String value) {

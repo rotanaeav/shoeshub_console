@@ -18,6 +18,8 @@ public interface ProductService {
     Product updateProduct(UUID id, CreateProductRequest request);
     void deleteProduct(UUID id);
 
+    Product setActive(UUID id, boolean active);
+
     ProductVariant addVariant(ProductVariant variant);
     List<ProductVariant> getVariantsByProductId(UUID productId);
     void updateStock(UUID variantId, int newStock);

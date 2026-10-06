@@ -14,6 +14,8 @@ public interface ProductVariantRepository extends CrudRepository<ProductVariant,
     ProductVariant updateStock(UUID id, int newStock);
     boolean updateStockWithConnection(Connection conn, UUID id, int quantityToDeduct) throws SQLException;
 
+    
+
     boolean existsVariant(UUID productId, BigDecimal size, String color);
 //    List<ProductVariant> findLowStock(int threshold);
 }

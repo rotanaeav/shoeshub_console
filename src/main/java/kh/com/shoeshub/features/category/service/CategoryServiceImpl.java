@@ -1,11 +1,13 @@
 package kh.com.shoeshub.features.category.service;
 
+import kh.com.shoeshub.authorize.AuthorizationService;
 import kh.com.shoeshub.exception.NotFoundException;
 import kh.com.shoeshub.exception.ValidationException;
 import kh.com.shoeshub.features.category.Category;
 import kh.com.shoeshub.features.category.dto.CreateCategoryRequest;
 import kh.com.shoeshub.features.category.repository.CategoryRepository;
 import kh.com.shoeshub.features.category.repository.CategoryRepositoryImpl;
+import kh.com.shoeshub.features.user.UserRole;
 
 import java.util.List;
 import java.util.Optional;
