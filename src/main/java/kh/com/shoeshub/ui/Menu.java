@@ -3,6 +3,7 @@ package kh.com.shoeshub.ui;
 
 import kh.com.shoeshub.authorize.AuthorizationService;
 import kh.com.shoeshub.authorize.Security;
+import kh.com.shoeshub.config.ServiceProvider;
 import kh.com.shoeshub.features.auth.AuthenticatedUser;
 import kh.com.shoeshub.features.user.UserController;
 import kh.com.shoeshub.features.cart.CartController;
@@ -38,18 +39,15 @@ public class Menu {
 
     private static final Security security = new Security();
     private static final AuthorizationService authorizationService = new AuthorizationService(security);
-//
-//    private static final UserController userController = new UserController(userService);
-    private static final UserRepository userRepository = new UserRepositoryImpl();
+
+    private static  final UserRepository userRepository = new UserRepositoryImpl();
     private static final AuthService authService = new AuthServiceImpl(userRepository);
-    private static final UserService userService =
-            new UserServiceImpl(userRepository, new UserMapper(), new UserValidator());
-    private static final UserController userController = new UserController(userService);
+    private static final UserController userController = ServiceProvider.getUserController();
 
     private static final ProductController productController = new ProductController(authorizationService);
     private static final CategoryController categoryController = new CategoryController(authorizationService);
 
-    private static final CartController cartController = new CartController();
+    private static final CartController cartController = ServiceProvider.getCartController();
     private static final WishlistController wishlistController = new WishlistController();
     private static final OrderController orderController = new OrderController();
     private static final PaymentController paymentController = new PaymentController();
@@ -69,7 +67,7 @@ public class Menu {
                             [2] SEARCH PRODUCTS
                             [3] LOGIN
                             [4] REGISTER
-                            [0] EXIT APPLICATION 
+                            [0] EXIT APPLICATION
                             """);
 
             int choice = InputUtil.readInt("Choose menu", 0, 4);

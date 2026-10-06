@@ -8,6 +8,5 @@ public class Main {
      static void main() {
          Menu.loginForTest(UserRole.SELLER);
          Menu.displaySellerMenu();
-
      }
 }
