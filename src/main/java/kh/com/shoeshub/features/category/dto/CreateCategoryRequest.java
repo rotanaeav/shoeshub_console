@@ -1,5 +1,15 @@
 package kh.com.shoeshub.features.category.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateCategoryRequest {
-    // TODO: Define category request fields (e.g. name, description)
+    private String name;
+    private String description;
 }
