@@ -1,124 +1,117 @@
 package kh.com.shoeshub.features.auth;
 
 import kh.com.shoeshub.authorize.Security;
+import kh.com.shoeshub.config.ServiceProvider;
 import kh.com.shoeshub.features.auth.dto.LoginRequest;
 import kh.com.shoeshub.features.auth.service.AuthService;
-import kh.com.shoeshub.features.auth.service.AuthServiceImpl;
-import kh.com.shoeshub.features.user.repository.UserRepository;
-import kh.com.shoeshub.features.user.repository.UserRepositoryImpl;
+import kh.com.shoeshub.features.user.UserController;
+import kh.com.shoeshub.features.user.UserRole;
+import kh.com.shoeshub.features.user.dto.CreateUserRequest;
+import kh.com.shoeshub.utils.InputUtil;
+import kh.com.shoeshub.utils.OutputUtil;
 
-import java.util.Scanner;
+import java.time.LocalDate;
 
 public class AuthUI {
+    private final Security security;
+    private  final AuthService authService;
+    private final UserController userController;
+
+    public AuthUI(Security security, AuthService authService, UserController userController) {
+        this.security = security;
+        this.authService = authService;
+        this.userController = userController;
+    }
 
 
-    void main() {
 
-        Scanner sc = new Scanner(System.in);
+    public void handleRegister() {
 
-        // INITIALIZE DEPENDENCIES
-        UserRepository userRepository = new UserRepositoryImpl();
+        try {
+            OutputUtil.printSubHeader("Register");
 
-        // Adjust this constructor to match your AuthServiceImpl
-        AuthService authService = new AuthServiceImpl(userRepository);
+            String fullName =
+                    InputUtil.readRequiredText("Full name");
 
-        Security security = new Security();
+            String username =
+                    InputUtil.readRequiredText(
+                            "Username (3-30 characters)"
+                    );
 
-        while (true) {
+            String password =
+                    InputUtil.readRequiredText(
+                            "Password (at least 8 characters)"
+                    );
 
-            System.out.println("\n========== AUTH TEST ==========");
-            System.out.println("1. Login");
-            System.out.println("2. Check Login Status");
-            System.out.println("3. View Current User");
-            System.out.println("4. Logout");
-            System.out.println("0. Exit");
-            System.out.print("Choose: ");
+            String phone =
+                    InputUtil.readRequiredText("Phone");
 
-            String choice = sc.nextLine();
+            LocalDate dob = LocalDate.parse(
+                    InputUtil.readRequiredText(
+                            "Date of birth (YYYY-MM-DD)"
+                    )
+            );
 
-            try {
-                switch (choice) {
+            String gender =
+                    InputUtil.readRequiredText("Gender")
+                            .toUpperCase();
 
-                    // LOGIN
-                    case "1" -> {
-                        if (security.isAuthenticated()) {
-                            System.out.println("You are already logged in.");
-                            break;
-                        }
+            String address =
+                    InputUtil.readText("Address (optional)");
 
-                        System.out.println("\n========== LOGIN ==========");
+            CreateUserRequest request =
+                    new CreateUserRequest(
+                            fullName,
+                            username,
+                            password,
+                            phone,
+                            dob,
+                            gender,
+                            address,
+                            UserRole.CUSTOMER
+                    );
 
-                        System.out.print("Username: ");
-                        String username = sc.nextLine();
+            userController.createUserCtrl(request);
 
-                        System.out.print("Password: ");
-                        String password = sc.nextLine();
+            OutputUtil.printSuccess(
+                    "Account created. You can login now."
+            );
 
-                        LoginRequest request = new LoginRequest(
-                                username,
-                                password
-                        );
+        } catch (Exception e) {
+            OutputUtil.printError(e.getMessage());
+        }
+    }
 
-                        AuthenticatedUser user = authService.login(request);
+    public AuthenticatedUser handleLogin() {
 
-                        security.authenticate(user);
+        try {
 
-                        System.out.println("\nLogin successful!");
-                        System.out.println("Welcome, " + user.username());
-                    }
+            OutputUtil.printSubHeader("LOGIN");
 
-                    // CHECK LOGIN STATUS
-                    case "2" -> {
-                        System.out.println("\n========== LOGIN STATUS ==========");
+            String username =
+                    InputUtil.readRequiredText("Username");
 
-                        if (security.isAuthenticated()) {
-                            System.out.println("You are logged in.");
-                        } else {
-                            System.out.println("You are not logged in.");
-                        }
-                    }
+            String password =
+                    InputUtil.readRequiredText("Password");
 
-                    // VIEW CURRENT USER
-                    case "3" -> {
-                        System.out.println("\n========== CURRENT USER ==========");
+            LoginRequest request =
+                    new LoginRequest(username, password);
 
-                        if (!security.isAuthenticated()) {
-                            System.out.println("Please login first.");
-                            break;
-                        }
+            AuthenticatedUser user =
+                    authService.login(request);
 
-                        AuthenticatedUser user = security.getCurrentUser();
+            security.authenticate(user);
 
-                        System.out.println("ID: " + user.id());
-                        System.out.println("Username: " + user.username());
-                        System.out.println("Role: " + user.role());
-                    }
+            OutputUtil.printSuccess(
+                    "Welcome, " + user.username()
+            );
 
-                    // LOGOUT
-                    case "4" -> {
-                        System.out.println("\n========== LOGOUT ==========");
+            return user;
 
-                        if (!security.isAuthenticated()) {
-                            System.out.println("You are not logged in.");
-                            break;
-                        }
+        } catch (Exception e) {
 
-                        security.logout();
-
-                        System.out.println("Logout successful!");
-                    }
-
-                    case "0" -> {
-                        System.out.println("Exiting...");
-                        return;
-                    }
-
-                    default -> System.out.println("Invalid choice.");
-                }
-
-            } catch (Exception e) {
-                System.out.println("\nOperation failed: " + e.getMessage());
-            }
+            OutputUtil.printError(e.getMessage());
+            return null;
         }
     }
 }

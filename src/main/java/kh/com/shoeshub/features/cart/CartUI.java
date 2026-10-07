@@ -1,5 +1,10 @@
 package kh.com.shoeshub.features.cart;
 
+import kh.com.shoeshub.features.cart.dto.CartItemResponse;
+import kh.com.shoeshub.utils.InputUtil;
+import kh.com.shoeshub.utils.OutputUtil;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
@@ -18,46 +23,51 @@ public class CartUI {
 
         while (true) {
 
-            System.out.println();
-            System.out.println("========== CART ==========");
-            System.out.println("1. View Cart");
-            System.out.println("2. Add To Cart");
-            System.out.println("3. Update Quantity");
-            System.out.println("4. Remove From Cart");
-            System.out.println("5. Clear Cart");
-            System.out.println("0. Back");
-            System.out.print("Choose option: ");
+            OutputUtil.printHeader("MY SHOPPING CART");
 
-            String choice = scanner.nextLine();
+            OutputUtil.println("""
+                    [1] View Cart
+                    [2] Add To Cart
+                    [3] Update Quantity
+                    [4] Remove From Cart
+                    [5] Clear Cart
+                    [0] Back
+                    """);
+
+            int choice = InputUtil.readInt(
+                    "Choose menu",
+                    0,
+                    5
+            );
 
             try {
 
                 switch (choice) {
 
-                    case "1" -> viewCart(userId);
+                    case 1 -> viewCart(userId);
 
-                    case "2" -> addToCart(userId);
+                    case 2 -> addToCart(userId);
 
-                    case "3" -> updateQuantity(userId);
+                    case 3 -> updateQuantity(userId);
 
-                    case "4" -> removeFromCart(userId);
+                    case 4 -> removeFromCart(userId);
 
-                    case "5" -> clearCart(userId);
+                    case 5 -> clearCart(userId);
 
-                    case "0" -> {
+                    case 0 -> {
                         return;
                     }
 
                     default ->
-                            System.out.println(
-                                    "Invalid option."
+                            OutputUtil.printError(
+                                    "Invalid menu choice."
                             );
                 }
 
             } catch (Exception e) {
 
-                System.out.println(
-                        "Error: " + e.getMessage()
+                OutputUtil.printError(
+                        e.getMessage()
                 );
             }
         }
@@ -65,35 +75,34 @@ public class CartUI {
 
     private void viewCart(UUID userId) {
 
-        System.out.println();
-        System.out.println("========== MY CART ==========");
+        OutputUtil.printHeader("MY CART");
 
-        List<CartItem> cartItems =
+        List<CartItemResponse> cartItems =
                 cartController.getMyCart(userId);
 
         if (cartItems.isEmpty()) {
-
-            System.out.println("Your cart is empty.");
+            OutputUtil.println("Your cart is empty.");
             return;
         }
 
-        for (CartItem item : cartItems) {
+        BigDecimal total = BigDecimal.ZERO;
 
-            System.out.println("----------------------------");
-            System.out.println(
-                    "Cart Item ID: " + item.getId()
-            );
+        for (CartItemResponse item : cartItems) {
 
-            System.out.println(
-                    "Variant ID: " + item.getVariantId()
-            );
+            OutputUtil.println("----------------------------");
 
-            System.out.println(
-                    "Quantity: " + item.getQuantity()
-            );
+            OutputUtil.println("Product : " + item.getProductName());
+            OutputUtil.println("Size    : " + item.getSize());
+            OutputUtil.println("Color   : " + item.getColor());
+            OutputUtil.println("Price   : $" + item.getPrice());
+            OutputUtil.println("Quantity: " + item.getQuantity());
+            OutputUtil.println("Subtotal: $" + item.getSubtotal());
+
+            total = total.add(item.getSubtotal());
         }
 
-        System.out.println("----------------------------");
+        OutputUtil.println("----------------------------");
+        OutputUtil.println("Total   : $" + total);
     }
 
     private void addToCart(UUID userId) {

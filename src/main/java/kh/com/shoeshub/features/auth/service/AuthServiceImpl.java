@@ -31,7 +31,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository
                 .findByUsername(request.username())
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Invalid username"
+                        "Invalid username or password"
                 ));
 
         if (user.isDeleted()) {
@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (!passwordMatched) {
             throw new IllegalArgumentException(
-                    "Invalid password"
+                    "Invalid username or password"
             );
         }
 

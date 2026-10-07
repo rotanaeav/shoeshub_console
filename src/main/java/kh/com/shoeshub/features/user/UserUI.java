@@ -1,286 +1,474 @@
 package kh.com.shoeshub.features.user;
 
-import kh.com.shoeshub.config.ServiceProvider;
+import kh.com.shoeshub.authorize.Security;
 import kh.com.shoeshub.features.user.dto.CreateUserRequest;
 import kh.com.shoeshub.features.user.dto.UpdateUserRequest;
 import kh.com.shoeshub.features.user.dto.UserResponse;
+import kh.com.shoeshub.utils.InputUtil;
+import kh.com.shoeshub.utils.OutputUtil;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
 import java.util.UUID;
 
 public class UserUI {
-    void main() {
+    private  final Security security;
+    private  final UserController userController;
 
-        Scanner sc = new Scanner(System.in);
+    public UserUI(Security security, UserController userController) {
+        this.security = security;
+        this.userController = userController;
+    }
 
-        UserController userController = ServiceProvider.getUserController();
-
-        UUID lastUserId = null;
+    public  void handleUserManagement() {
 
         while (true) {
+            OutputUtil.printHeader("USER MANAGEMENT");
+            OutputUtil.println("""
+                [1] Create Admin
+                [2] Create Seller
+                [3] Find User By ID
+                [4] Find User By Username
+                [5] Find All Users
+                [6] Update User
+                [7] Soft Delete User
+                [8] Restore User
+                [9] Permanent Delete User
+                [0] Back
+                """);
 
-            System.out.println("\n========== USER TEST MENU ==========");
-            System.out.println("1. Create User");
-            System.out.println("2. Find User By ID");
-            System.out.println("3. Find User By Username");
-            System.out.println("4. Find All Users");
-            System.out.println("5. Update User");
-            System.out.println("6. Soft Delete User");
-            System.out.println("7. Restore User");
-            System.out.println("8. Permanent Delete User");
-            System.out.println("0. Exit");
-            System.out.print("Choose: ");
+            int choice = InputUtil.readInt("Choose menu", 0, 9);
 
-            int choice;
+            switch (choice) {
 
-            try {
-                choice = Integer.parseInt(sc.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number.");
-                continue;
-            }
+                case 1 -> handleCreateAdmin();
 
-            try {
-                switch (choice) {
+                case 2 -> handleCreateSeller();
 
-                    case 1 -> {
-                        System.out.println("\n========== CREATE USER ==========");
+                case 3 -> handleFindUserById();
 
-                        System.out.print("Full Name: ");
-                        String fullName = sc.nextLine();
+                case 4 -> handleFindUserByUsername();
 
-                        System.out.print("Username: ");
-                        String username = sc.nextLine();
+                case 5 -> handleFindAllUsers();
 
-                        System.out.print("Password: ");
-                        String password = sc.nextLine();
+                case 6 -> handleUpdateUser();
 
-                        System.out.print("Phone: ");
-                        String phone = sc.nextLine();
+                case 7 -> handleSoftDeleteUser();
 
-                        System.out.print("Date of Birth (YYYY-MM-DD): ");
-                        LocalDate dob = LocalDate.parse(sc.nextLine());
+                case 8 -> handleRestoreUser();
 
-                        System.out.print("Gender: ");
-                        String gender = sc.nextLine();
+                case 9 -> handlePermanentDeleteUser();
 
-                        System.out.print("Address: ");
-                        String address = sc.nextLine();
-
-                        CreateUserRequest request = new CreateUserRequest(
-                                fullName,
-                                username,
-                                password,
-                                phone,
-                                dob,
-                                gender.toUpperCase(Locale.ROOT),
-                                address
-                        );
-
-                        UserResponse response = userController.createUserCtrl(request);
-
-                        lastUserId = response.id();
-
-                        System.out.println("\nUser created successfully!");
-                        printUser(response);
-                        System.out.println("Saved ID for testing: " + lastUserId);
-                    }
-
-                    // FIND BY ID
-                    case 2 -> {
-                        System.out.println("\n========== FIND USER BY ID ==========");
-
-                        UUID id = readUserId(sc, lastUserId);
-
-                        UserResponse response = userController.findUserByIdCtrl(id);
-
-                        printUser(response);
-                    }
-
-                    // FIND BY USERNAME
-                    case 3 -> {
-                        System.out.println("\n========== FIND USER BY USERNAME ==========");
-
-                        System.out.print("Enter username: ");
-                        String username = sc.nextLine();
-
-                        UserResponse response =
-                                userController.findUserByUsernameCtrl(username);
-
-                        printUser(response);
-                    }
-
-                    // FIND ALL
-                    case 4 -> {
-                        System.out.println("\n========== FIND ALL USERS ==========");
-
-                        List<UserResponse> users = userController.findAllUsersCtrl();
-
-                        if (users.isEmpty()) {
-                            System.out.println("No users found.");
-                        } else {
-                            users.forEach(UserUI::printUser);
-                        }
-                    }
-
-                    // UPDATE USER
-                    case 5 -> {
-                        System.out.println("\n========== UPDATE USER ==========");
-
-                        UUID id = readUserId(sc, lastUserId);
-
-                        System.out.println("Leave a field empty to keep its current value.");
-
-                        System.out.print("Full Name: ");
-                        String fullName = emptyToNull(sc.nextLine());
-
-                        System.out.print("Username: ");
-                        String username = emptyToNull(sc.nextLine());
-
-                        System.out.print("Phone: ");
-                        String phone = emptyToNull(sc.nextLine());
-
-                        System.out.print("Date of Birth (YYYY-MM-DD): ");
-                        String dobInput = sc.nextLine();
-                        LocalDate dateOfBirth = dobInput.isBlank()
-                                ? null
-                                : LocalDate.parse(dobInput);
-
-                        System.out.print("Gender: ");
-                        String gender = emptyToNull(sc.nextLine());
-
-                        System.out.print("Address: ");
-                        String address = emptyToNull(sc.nextLine());
-
-                        UpdateUserRequest request = new UpdateUserRequest(
-                                fullName,
-                                username,
-                                phone,
-                                dateOfBirth,
-                                gender,
-                                address
-                        );
-
-                        UserResponse response =
-                                userController.updateUserCtrl(id, request);
-
-                        System.out.println("\nUser updated successfully!");
-                        printUser(response);
-                    }
-
-                    // SOFT DELETE
-                    case 6 -> {
-                        System.out.println("\n========== SOFT DELETE USER ==========");
-
-                        UUID id = readUserId(sc, lastUserId);
-
-                        System.out.print("Are you sure? (y/n): ");
-                        String confirm = sc.nextLine();
-
-                        if (confirm.equalsIgnoreCase("y")) {
-                            boolean deleted = userController.softDeleteCtrl(id);
-
-                            System.out.println(
-                                    deleted
-                                            ? "User soft-deleted successfully."
-                                            : "User was not deleted."
-                            );
-                        } else {
-                            System.out.println("Cancelled.");
-                        }
-                    }
-
-                    // RESTORE
-                    case 7 -> {
-                        System.out.println("\n========== RESTORE USER ==========");
-
-                        UUID id = readUserId(sc, lastUserId);
-
-                        UserResponse response = userController.restoreUserCtrl(id);
-
-                        System.out.println("\nUser restored successfully!");
-                        printUser(response);
-                    }
-
-                    // PERMANENT DELETE
-                    case 8 -> {
-                        System.out.println("\n========== PERMANENT DELETE USER ==========");
-
-                        UUID id = readUserId(sc, lastUserId);
-
-                        System.out.print("This cannot be undone. Continue? (y/n): ");
-                        String confirm = sc.nextLine();
-
-                        if (confirm.equalsIgnoreCase("y")) {
-                            userController.permanentDeleteUserCtrl(id);
-
-                            System.out.println("User permanently deleted.");
-
-                            if (id.equals(lastUserId)) {
-                                lastUserId = null;
-                            }
-                        } else {
-                            System.out.println("Cancelled.");
-                        }
-                    }
-
-                    case 0 -> {
-                        System.out.println("Exiting...");
-                        return;
-                    }
-
-                    default -> System.out.println("Invalid choice. Try again.");
+                case 0 -> {
+                    return;
                 }
 
-            } catch (Exception e) {
-                System.out.println("\nOperation failed: " + e.getMessage());
+                default ->
+                        OutputUtil.printError("Invalid menu choice.");
             }
         }
     }
 
-    static void printUser(UserResponse user) {
-        System.out.println("------------------------------------");
-        System.out.println("ID: " + user.id());
-        System.out.println("Full Name: " + user.fullName());
-        System.out.println("Username: " + user.username());
-        System.out.println("Phone: " + user.phone());
-        System.out.println("Date of Birth: " + user.dateOfBirth());
-        System.out.println("Gender: " + user.gender());
-        System.out.println("Address: " + user.address());
-        System.out.println("Role: " + user.role());
-        System.out.println("Created At: " + user.createdAt());
-        System.out.println("------------------------------------");
+    public  void printUser(UserResponse user) {
+
+        OutputUtil.println("----------------------------------------");
+        OutputUtil.println("ID: " + user.id());
+        OutputUtil.println("Full Name: " + user.fullName());
+        OutputUtil.println("Username: " + user.username());
+        OutputUtil.println("Phone: " + user.phone());
+        OutputUtil.println("Date of Birth: " + user.dateOfBirth());
+        OutputUtil.println("Gender: " + user.gender());
+        OutputUtil.println("Address: " + user.address());
+        OutputUtil.println("Role: " + user.role());
+        OutputUtil.println("Created At: " + user.createdAt());
+        OutputUtil.println("----------------------------------------");
     }
 
-    // READ USER ID
-    static UUID readUserId(Scanner sc, UUID lastUserId) {
+    public  void handleViewProfile() {
 
-        if (lastUserId != null) {
-            System.out.println("Last created user ID: " + lastUserId);
+        try {
+
+            OutputUtil.printSubHeader("MY PROFILE");
+
+            UserResponse user =
+                    userController.getCurrentUserCtrl();
+
+            printUser(user);
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
         }
+    }
 
-        System.out.print("Enter User ID (press Enter to use last ID): ");
-        String input = sc.nextLine();
+    public  void handleCreateAdmin() {
 
-        if (input.isBlank()) {
-            if (lastUserId == null) {
-                throw new IllegalArgumentException("No saved user ID. Please enter an ID.");
+        try {
+
+            OutputUtil.printSubHeader("CREATE ADMIN");
+
+            String fullName =
+                    InputUtil.readRequiredText("Full name");
+
+            String username =
+                    InputUtil.readRequiredText(
+                            "Username (3-30 characters)"
+                    );
+
+            String password =
+                    InputUtil.readRequiredText(
+                            "Password (at least 8 characters)"
+                    );
+
+            String phone =
+                    InputUtil.readRequiredText("Phone");
+
+            LocalDate dob = LocalDate.parse(
+                    InputUtil.readRequiredText(
+                            "Date of birth (YYYY-MM-DD)"
+                    )
+            );
+
+            String gender =
+                    InputUtil.readRequiredText("Gender")
+                            .toUpperCase();
+
+            String address =
+                    InputUtil.readText("Address (optional)");
+
+            CreateUserRequest request =
+                    new CreateUserRequest(
+                            fullName,
+                            username,
+                            password,
+                            phone,
+                            dob,
+                            gender,
+                            address,
+                            UserRole.ADMIN
+                    );
+
+            userController.createUserCtrl(request);
+
+            OutputUtil.printSuccess(
+                    "Admin account created successfully."
+            );
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
+    }
+    public  void handleCreateSeller() {
+
+        try {
+
+            OutputUtil.printSubHeader("CREATE SELLER");
+
+            String fullName =
+                    InputUtil.readRequiredText("Full name");
+
+            String username =
+                    InputUtil.readRequiredText(
+                            "Username (3-30 characters)"
+                    );
+
+            String password =
+                    InputUtil.readRequiredText(
+                            "Password (at least 8 characters)"
+                    );
+
+            String phone =
+                    InputUtil.readRequiredText("Phone");
+
+            LocalDate dob = LocalDate.parse(
+                    InputUtil.readRequiredText(
+                            "Date of birth (YYYY-MM-DD)"
+                    )
+            );
+
+            String gender =
+                    InputUtil.readRequiredText("Gender")
+                            .toUpperCase();
+
+            String address =
+                    InputUtil.readText("Address (optional)");
+
+            CreateUserRequest request =
+                    new CreateUserRequest(
+                            fullName,
+                            username,
+                            password,
+                            phone,
+                            dob,
+                            gender,
+                            address,
+                            UserRole.SELLER
+                    );
+
+            userController.createUserCtrl(request);
+
+            OutputUtil.printSuccess(
+                    "Seller account created successfully."
+            );
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
+    }
+
+    public  void handleFindUserById() {
+
+        try {
+
+            OutputUtil.printSubHeader("FIND USER BY ID");
+
+            String input =
+                    InputUtil.readRequiredText("User ID");
+
+            UUID id = UUID.fromString(input);
+
+            UserResponse user =
+                    userController.findUserByIdCtrl(id);
+
+            printUser(user);
+
+        } catch (IllegalArgumentException e) {
+
+            OutputUtil.printError(e.getMessage());
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
+    }
+
+    public  void handleFindUserByUsername() {
+
+        try {
+
+            OutputUtil.printSubHeader("FIND USER BY USERNAME");
+
+            String username =
+                    InputUtil.readRequiredText("Username");
+
+            UserResponse user =
+                    userController.findUserByUsernameCtrl(username);
+
+            printUser(user);
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
+    }
+
+    public  void handleFindAllUsers() {
+
+        try {
+
+            OutputUtil.printSubHeader("ALL USERS");
+
+            List<UserResponse> users =
+                    userController.findAllUsersCtrl();
+
+            if (users.isEmpty()) {
+
+                OutputUtil.printInfo("No users found.");
+                return;
             }
 
-            return lastUserId;
-        }
+            for (UserResponse user : users) {
+                printUser(user);
+            }
 
-        return UUID.fromString(input);
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
     }
 
-    // CONVERT EMPTY STRING TO NULL
-    static String emptyToNull(String value) {
+    private static String emptyToNull(String value) {
         return value.isBlank() ? null : value;
     }
 
+    public  void handleUpdateUser() {
 
+        try {
+
+            OutputUtil.printSubHeader("UPDATE USER");
+
+            String input =
+                    InputUtil.readRequiredText("User ID");
+
+            UUID id = UUID.fromString(input);
+
+            OutputUtil.println(
+                    "Leave a field empty to keep the current value."
+            );
+
+            String fullName =
+                    InputUtil.readText("Full name");
+
+            String username =
+                    InputUtil.readText("Username");
+
+            String phone =
+                    InputUtil.readText("Phone");
+
+            String dobInput =
+                    InputUtil.readText(
+                            "Date of birth (YYYY-MM-DD)"
+                    );
+
+            LocalDate dateOfBirth = dobInput.isBlank()
+                            ? null
+                            : LocalDate.parse(dobInput);
+
+            String gender =
+                    InputUtil.readText("Gender");
+
+            String address =
+                    InputUtil.readText("Address");
+
+            UpdateUserRequest request =
+                    new UpdateUserRequest(
+                            emptyToNull(fullName),
+                            emptyToNull(username),
+                            emptyToNull(phone),
+                            dateOfBirth,
+                            emptyToNull(gender),
+                            emptyToNull(address)
+                    );
+
+            UserResponse response =
+                    userController.updateUserCtrl(id, request);
+
+            OutputUtil.printSuccess(
+                    "User updated successfully."
+            );
+
+            printUser(response);
+
+        } catch (IllegalArgumentException e) {
+
+            OutputUtil.printError(e.getMessage());
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
+    }
+
+    public  void handleSoftDeleteUser() {
+
+        try {
+
+            OutputUtil.printSubHeader("SOFT DELETE USER");
+
+            String input =
+                    InputUtil.readRequiredText("User ID");
+
+            UUID id = UUID.fromString(input);
+
+            String confirm =
+                    InputUtil.readRequiredText(
+                            "Are you sure you want to delete this user? (y/n)"
+                    );
+
+            if (!confirm.equalsIgnoreCase("y")) {
+                OutputUtil.printInfo("Cancelled.");
+                return;
+            }
+
+            boolean deleted =
+                    userController.softDeleteCtrl(id);
+
+            if (deleted) {
+                OutputUtil.printSuccess(
+                        "User soft-deleted successfully."
+                );
+            } else {
+                OutputUtil.printError(
+                        "User was not deleted."
+                );
+            }
+
+        } catch (IllegalArgumentException e) {
+
+            OutputUtil.printError(e.getMessage());
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
+    }
+
+    public  void handleRestoreUser() {
+
+        try {
+
+            OutputUtil.printSubHeader("RESTORE USER");
+
+            String input =
+                    InputUtil.readRequiredText("User ID");
+
+            UUID id = UUID.fromString(input);
+
+            UserResponse response =
+                    userController.restoreUserCtrl(id);
+
+            OutputUtil.printSuccess(
+                    "User restored successfully."
+            );
+
+            printUser(response);
+
+        } catch (IllegalArgumentException e) {
+
+            OutputUtil.printError(e.getMessage());
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
+    }
+
+    public  void handlePermanentDeleteUser() {
+
+        try {
+
+            OutputUtil.printSubHeader("PERMANENT DELETE USER");
+
+            String input =
+                    InputUtil.readRequiredText("User ID");
+
+            UUID id = UUID.fromString(input);
+
+            String confirm =
+                    InputUtil.readRequiredText(
+                            "This cannot be undone. Continue? (y/n)"
+                    );
+
+            if (!confirm.equalsIgnoreCase("y")) {
+                OutputUtil.printInfo("Cancelled.");
+                return;
+            }
+
+            userController.permanentDeleteUserCtrl(id);
+
+            OutputUtil.printSuccess(
+                    "User permanently deleted."
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            OutputUtil.printError(e.getMessage());
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
+    }
 }
-

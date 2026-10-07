@@ -1,8 +1,11 @@
 package kh.com.shoeshub.features.cart.service;
 
+import kh.com.shoeshub.authorize.AuthorizationService;
 import kh.com.shoeshub.exception.NotFoundException;
 import kh.com.shoeshub.exception.ValidationException;
+import kh.com.shoeshub.features.auth.AuthenticatedUser;
 import kh.com.shoeshub.features.cart.CartItem;
+import kh.com.shoeshub.features.cart.dto.CartItemResponse;
 import kh.com.shoeshub.features.cart.repository.CartRepository;
 import kh.com.shoeshub.features.cart.repository.CartRepositoryImpl;
 import kh.com.shoeshub.features.product.ProductVariant;
@@ -16,13 +19,16 @@ public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
     private final ProductVariantRepository variantRepository;
+    private final AuthorizationService authorizationService;
 
     public CartServiceImpl(
             CartRepository cartRepository,
-            ProductVariantRepository variantRepository
+            ProductVariantRepository variantRepository,
+            AuthorizationService authorizationService
     ) {
         this.cartRepository = cartRepository;
         this.variantRepository = variantRepository;
+        this.authorizationService = authorizationService;
     }
 
     @Override
@@ -96,8 +102,11 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public List<CartItem> getMyCart(UUID userId) {
-        return cartRepository.findByUserId(userId);
+    public List<CartItemResponse> getMyCart(UUID userId) {
+
+        AuthenticatedUser currentUser = authorizationService.requireAuthenticated();
+
+        return cartRepository.findByUserId(currentUser.id());
     }
 
     @Override
