@@ -1,5 +1,10 @@
 package kh.com.shoeshub.features.report.repository;
 
+import kh.com.shoeshub.features.report.dto.CreateReportRequest;
+
+import java.util.UUID;
+
 public interface ReportRepository {
-    // TODO: Define reporting query methods (e.g. getTotalRevenue, getTopSellingProducts, getRevenueByCategory)
+    boolean canViewReports(UUID userId);
+    CreateReportRequest.ReportData getReport(CreateReportRequest request);
 }
