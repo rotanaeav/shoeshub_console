@@ -1,6 +1,5 @@
 package kh.com.shoeshub.ui;
 
-import kh.com.shoeshub.authorize.AuthorizationService;
 import kh.com.shoeshub.authorize.Security;
 import kh.com.shoeshub.config.ServiceProvider;
 import kh.com.shoeshub.features.auth.AuthUI;
@@ -25,23 +24,16 @@ public class Menu {
 
     // Controllers
     private static final Security security = new Security();
-    private static  final AuthorizationService authorizationService = ServiceProvider.getAuthorizationService(security);
     private static final AuthService authService = ServiceProvider.getAuthService();
     private static final UserController userController = ServiceProvider.getUserController(security);
-
-    private static final CategoryController categoryController = new CategoryController(authorizationService);
+    private static final ProductController productController = new ProductController(ServiceProvider.getAuthorizationService(security));
+    private static final CategoryController categoryController = new CategoryController(ServiceProvider.getAuthorizationService(security));
     private static final CartController cartController = ServiceProvider.getCartController(security);
-    private static final WishlistController wishlistController = ServiceProvider.getWishlistController(authorizationService);
+    private static final WishlistController wishlistController = ServiceProvider.getWishlistController(ServiceProvider.getAuthorizationService(security));
     private static final OrderController orderController = new OrderController();
     private static final PaymentController paymentController = new PaymentController();
     private static final ReviewController reviewController = new ReviewController();
     private static final ReportController reportController = new ReportController();
-
-    private static final ProductController productController = ServiceProvider.getProductController(
-            authorizationService,
-            ServiceProvider.getCartService(security),
-            ServiceProvider.getWishlistService(authorizationService)
-    );
 
     // UI
     private static final AuthUI authUI = new AuthUI(security, authService, userController);
@@ -110,9 +102,7 @@ public class Menu {
             int choice = InputUtil.readInt("Choose menu", 0, 9);
 
             switch (choice) {
-                case 1 -> productController.handleBrowseProducts(
-                        userController.getCurrentUserCtrl().id()
-                );
+                case 1 -> productController.handleBrowseProducts();
                 case 2 -> cartUI.showCartMenu(userController.getCurrentUserCtrl().id());
                 case 3 -> wishlistUI.showWishlistMenu();
                 case 4 -> orderController.handleViewOrderHistory();
