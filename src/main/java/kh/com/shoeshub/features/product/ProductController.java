@@ -2,6 +2,7 @@ package kh.com.shoeshub.features.product;
 
 import kh.com.shoeshub.exception.AppException;
 import kh.com.shoeshub.exception.NotFoundException;
+import kh.com.shoeshub.features.cart.service.CartService;
 import kh.com.shoeshub.features.category.Category;
 import kh.com.shoeshub.features.category.service.CategoryService;
 import kh.com.shoeshub.features.category.service.CategoryServiceImpl;
@@ -9,6 +10,7 @@ import kh.com.shoeshub.features.product.dto.CreateProductRequest;
 import kh.com.shoeshub.features.product.service.ProductService;
 import kh.com.shoeshub.features.product.service.ProductServiceImpl;
 import kh.com.shoeshub.authorize.AuthorizationService;
+import kh.com.shoeshub.features.wishlist.service.WishlistService;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
 import java.util.List;
@@ -22,20 +24,31 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final AuthorizationService authorizationService;
+    private final WishlistService wishlistService;
+    private final CartService cartService;
     private final ProductUI productUI = new ProductUI();
 
-    public ProductController(AuthorizationService authorizationService) {
+    public ProductController(
+            AuthorizationService authorizationService,
+            CartService cartService,
+            WishlistService wishlistService
+    ) {
         this.authorizationService = authorizationService;
+        this.cartService = cartService;
+        this.wishlistService = wishlistService;
         this.productService = new ProductServiceImpl(authorizationService);
         this.categoryService = new CategoryServiceImpl(authorizationService);
     }
 
-    // Admin / seller: product management menu loop
+    public ProductController(AuthorizationService authorizationService) {
+        this(authorizationService, null, null);
+    }
+
     public void showMenu() {
         boolean running = true;
+
         while (running) {
-            productUI.displayProductMenu();
-            int choice = InputUtil.readInt("Choose an option", 0, 10);
+            int choice = productUI.displayProductMenu();
 
             switch (choice) {
                 case 1 -> handleListProducts();
@@ -55,9 +68,143 @@ public class ProductController {
 
     // ------------------------------------------------- customer / guest browse
 
-    // Customer / guest browse: active products only, no STATUS column
+    // Guest browse (no login required)
     public void handleBrowseProducts() {
-        run(() -> showProducts(productService.getActiveProducts(), false));
+        handleBrowseProducts(null);
+    }
+
+    // Customer browse: active products only, no STATUS column
+    public void handleBrowseProducts(UUID userId) {
+        run(() -> {
+            List<Product> products = productService.getActiveProducts();
+
+            if (products.isEmpty()) {
+                throw new NotFoundException("No products available.");
+            }
+
+            Map<Short, String> names = categoryNames();
+
+            productUI.displayProductChoices(products, names);
+
+            int choice = InputUtil.readInt(
+                    "Select product number (1-" + products.size() + ", 0 to back)",
+                    0,
+                    products.size()
+            );
+
+            if (choice == 0) {
+                return;
+            }
+
+            Product product = products.get(choice - 1);
+
+            List<ProductVariant> variants =
+                    productService.getVariantsByProductId(product.getId());
+
+            productUI.displayProductDetail(product, variants, names);
+
+            showCustomerProductActions(product, variants, userId);
+        });
+    }
+
+    private void showCustomerProductActions(
+            Product product,
+            List<ProductVariant> variants,
+            UUID userId
+    ) {
+        while (true) {
+            OutputUtil.println("""
+                
+                [1] Add to Cart
+                [2] Add to Wishlist
+                [0] Back
+                """);
+
+            int choice = InputUtil.readInt("Choose option", 0, 2);
+
+            switch (choice) {
+                case 1 -> handleAddToCart(product, variants, userId);
+                case 2 -> handleAddToWishlist(product, userId);
+                case 0 -> {
+                    return;
+                }
+            }
+        }
+    }
+
+    private void handleAddToWishlist(Product product, UUID userId) {
+        if (userId == null) {
+            OutputUtil.printWarning("Please log in first to add items to your wishlist.");
+            return;
+        }
+
+        if (wishlistService == null) {
+            OutputUtil.printError("Wishlist service is not available.");
+            return;
+        }
+
+        wishlistService.addToWishlist(product.getId());
+
+        OutputUtil.printSuccess(
+                product.getName() + " added to your wishlist."
+        );
+    }
+
+    private void handleAddToCart(
+            Product product,
+            List<ProductVariant> variants,
+            UUID userId
+    ) {
+        if (userId == null) {
+            OutputUtil.printWarning("Please log in first to add items to your cart.");
+            return;
+        }
+
+        if (cartService == null) {
+            OutputUtil.printError("Cart service is not available.");
+            return;
+        }
+
+        if (variants == null || variants.isEmpty()) {
+            OutputUtil.printError("This product has no variants.");
+            return;
+        }
+
+        productUI.displayVariants(variants);
+
+        OutputUtil.println("[0] Cancel");
+        int choice = InputUtil.readInt(
+                "Select variant",
+                0,
+                variants.size()
+        );
+
+        if (choice == 0) {
+            return;
+        }
+
+        ProductVariant variant = variants.get(choice - 1);
+
+        if (variant.getStockQuantity() == null || variant.getStockQuantity() <= 0) {
+            OutputUtil.printError("Sorry, this variant is currently out of stock.");
+            return;
+        }
+
+        int quantity = InputUtil.readInt(
+                "Quantity",
+                1,
+                variant.getStockQuantity()
+        );
+
+        cartService.addToCart(
+                userId,
+                variant.getId(),
+                quantity
+        );
+
+        OutputUtil.printSuccess(
+                product.getName() + " added to cart successfully."
+        );
     }
 
     // Staff list: everything, with STATUS
@@ -65,10 +212,9 @@ public class ProductController {
         run(() -> showProducts(productService.getAllProducts(), true));
     }
 
-    // Search and filter: staff see STATUS, customers and guests don't
     public void handleSearchProducts() {
         run(() -> {
-            String keyword = InputUtil.readRequiredText("Search keyword");
+            String keyword = productUI.readSearchKeyword();
             showProducts(productService.searchProducts(keyword), isStaff());
         });
     }
@@ -85,7 +231,7 @@ public class ProductController {
     public void handleViewProductDetail() {
         run(() -> {
             Map<Short, String> names = categoryNames();
-            Product product = pickProduct(productService.getAllProducts(), names);
+            Product product = pickProduct();
             List<ProductVariant> variants = productService.getVariantsByProductId(product.getId());
             productUI.displayProductDetail(product, variants, names);
         });
@@ -116,9 +262,12 @@ public class ProductController {
     public void handleDeleteProduct() {
         run(() -> {
             Product product = pickProduct();
-            if (InputUtil.readConfirm("Delete '" + product.getName() + "' and all its variants?")) {
+            if (productUI.readConfirmation(
+                    "Delete '" + product.getName() + "' and all its variants?")) {
+
                 productService.deleteProduct(product.getId());
                 OutputUtil.printSuccess("Product " + product.getSku() + " deleted.");
+
             } else {
                 OutputUtil.printInfo("Delete cancelled.");
             }
@@ -133,7 +282,7 @@ public class ProductController {
         run(() -> {
             Product product = pickProduct();
             ProductVariant variant = pickVariant(product.getId());
-            int newStock = InputUtil.readInt("New stock quantity", 0, 100000);
+            int newStock = productUI.readStockQuantity();
             productService.updateStock(variant.getId(), newStock);
             OutputUtil.printSuccess("Stock updated to " + newStock + ".");
         });
@@ -145,10 +294,13 @@ public class ProductController {
             boolean newState = !product.isActive();
             String action = newState ? "Activate" : "Deactivate";
 
-            if (InputUtil.readConfirm(action + " '" + product.getName() + "'?")) {
+            if (productUI.readConfirmation(
+                    action + " '" + product.getName() + "'?")) {
+
                 productService.setActive(product.getId(), newState);
                 OutputUtil.printSuccess("Product " + product.getSku() + " is now "
                         + (newState ? "ACTIVE" : "INACTIVE") + ".");
+
             } else {
                 OutputUtil.printInfo("Cancelled.");
             }
@@ -191,26 +343,17 @@ public class ProductController {
     }
 
     private Product pickProduct() {
-        return pickProduct(productService.getAllProducts(), categoryNames());
-    }
-
-    private Product pickProduct(List<Product> products, Map<Short, String> names) {
-        if (products.isEmpty()) {
-            throw new NotFoundException("No products available.");
-        }
-        productUI.displayProductChoices(products, names);
-        int choice = InputUtil.readInt("Select product number (1-" + products.size() + ")", 1, products.size());
-        return products.get(choice - 1);
+        return productUI.selectProduct(
+                productService.getAllProducts(),
+                categoryNames()
+        );
     }
 
     private ProductVariant pickVariant(UUID productId) {
-        List<ProductVariant> variants = productService.getVariantsByProductId(productId);
-        if (variants.isEmpty()) {
-            throw new NotFoundException("This product has no variants yet.");
-        }
-        productUI.displayVariants(variants);
-        int choice = InputUtil.readInt("Select variant number (1-" + variants.size() + ")", 1, variants.size());
-        return variants.get(choice - 1);
+        List<ProductVariant> variants =
+                productService.getVariantsByProductId(productId);
+
+        return productUI.selectVariant(variants);
     }
 
     private void addVariantsTo(Product product) {
