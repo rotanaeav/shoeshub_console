@@ -9,8 +9,12 @@ import kh.com.shoeshub.features.cart.repository.CartRepository;
 import kh.com.shoeshub.features.cart.repository.CartRepositoryImpl;
 import kh.com.shoeshub.features.cart.service.CartService;
 import kh.com.shoeshub.features.cart.service.CartServiceImpl;
+import kh.com.shoeshub.features.category.Category;
+import kh.com.shoeshub.features.category.service.CategoryService;
+import kh.com.shoeshub.features.product.ProductController;
 import kh.com.shoeshub.features.product.repository.ProductVariantRepository;
 import kh.com.shoeshub.features.product.repository.ProductVariantRepositoryImpl;
+import kh.com.shoeshub.features.product.service.ProductService;
 import kh.com.shoeshub.features.user.UserController;
 import kh.com.shoeshub.features.user.mapper.UserMapper;
 import kh.com.shoeshub.features.user.repository.UserRepository;
@@ -73,5 +77,41 @@ public class ServiceProvider {
                 );
 
         return new WishlistController(wishlistService);
+    }
+    public static CartService getCartService(Security security) {
+        AuthorizationService authorizationService = new AuthorizationService(security);
+        CartRepository cartRepository = new CartRepositoryImpl();
+        ProductVariantRepository productVariantRepository = new ProductVariantRepositoryImpl();
+        return new CartServiceImpl(cartRepository, productVariantRepository, authorizationService);
+    }
+
+    public static WishlistService getWishlistService(AuthorizationService authorizationService) {
+        WishlistRepository wishlistRepository = new WishlistRepositoryImpl();
+        return new WishlistServiceImpl(wishlistRepository, authorizationService);
+    }
+
+    public static ProductController getProductController(
+            AuthorizationService authorizationService,
+            CartService cartService,
+            WishlistService wishlistService
+    ) {
+        return new ProductController(
+                authorizationService,
+                cartService,
+                wishlistService
+        );
+    }
+
+    public static ProductController getProductController(
+            AuthorizationService authorizationService,
+            WishlistController wishlistController,
+            CartController cartController,
+            UserController userController
+    ) {
+        return new ProductController(
+                authorizationService,
+                null,
+                null
+        );
     }
 }
