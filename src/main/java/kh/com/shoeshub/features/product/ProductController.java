@@ -2,7 +2,7 @@ package kh.com.shoeshub.features.product;
 
 import kh.com.shoeshub.exception.AppException;
 import kh.com.shoeshub.exception.NotFoundException;
-import kh.com.shoeshub.features.cart.CartController;
+import kh.com.shoeshub.features.cart.service.CartService;
 import kh.com.shoeshub.features.category.Category;
 import kh.com.shoeshub.features.category.service.CategoryService;
 import kh.com.shoeshub.features.category.service.CategoryServiceImpl;
@@ -10,8 +10,7 @@ import kh.com.shoeshub.features.product.dto.CreateProductRequest;
 import kh.com.shoeshub.features.product.service.ProductService;
 import kh.com.shoeshub.features.product.service.ProductServiceImpl;
 import kh.com.shoeshub.authorize.AuthorizationService;
-import kh.com.shoeshub.features.user.UserController;
-import kh.com.shoeshub.features.wishlist.WishlistController;
+import kh.com.shoeshub.features.wishlist.service.WishlistService;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
 import java.util.List;
@@ -25,18 +24,24 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final AuthorizationService authorizationService;
-    private final WishlistController wishlistController;
-    private final CartController cartController;
-    private final UserController userController;
+    private final WishlistService wishlistService;
+    private final CartService cartService;
     private final ProductUI productUI = new ProductUI();
 
-    public ProductController(AuthorizationService authorizationService, WishlistController wishlistController, CartController cartController, UserController userController) {
+    public ProductController(
+            AuthorizationService authorizationService,
+            CartService cartService,
+            WishlistService wishlistService
+    ) {
         this.authorizationService = authorizationService;
-        this.wishlistController = wishlistController;
-        this.cartController = cartController;
-        this.userController = userController;
+        this.cartService = cartService;
+        this.wishlistService = wishlistService;
         this.productService = new ProductServiceImpl(authorizationService);
         this.categoryService = new CategoryServiceImpl(authorizationService);
+    }
+
+    public ProductController(AuthorizationService authorizationService) {
+        this(authorizationService, null, null);
     }
 
     public void showMenu() {
@@ -63,7 +68,12 @@ public class ProductController {
 
     // ------------------------------------------------- customer / guest browse
 
-    // Customer / guest browse: active products only, no STATUS column
+    // Guest browse (no login required)
+    public void handleBrowseProducts() {
+        handleBrowseProducts(null);
+    }
+
+    // Customer browse: active products only, no STATUS column
     public void handleBrowseProducts(UUID userId) {
         run(() -> {
             List<Product> products = productService.getActiveProducts();
@@ -114,7 +124,7 @@ public class ProductController {
 
             switch (choice) {
                 case 1 -> handleAddToCart(product, variants, userId);
-                case 2 -> handleAddToWishlist(product);
+                case 2 -> handleAddToWishlist(product, userId);
                 case 0 -> {
                     return;
                 }
@@ -122,8 +132,18 @@ public class ProductController {
         }
     }
 
-    private void handleAddToWishlist(Product product) {
-        wishlistController.addToWishlist(product.getId());
+    private void handleAddToWishlist(Product product, UUID userId) {
+        if (userId == null) {
+            OutputUtil.printWarning("Please log in first to add items to your wishlist.");
+            return;
+        }
+
+        if (wishlistService == null) {
+            OutputUtil.printError("Wishlist service is not available.");
+            return;
+        }
+
+        wishlistService.addToWishlist(product.getId());
 
         OutputUtil.printSuccess(
                 product.getName() + " added to your wishlist."
@@ -135,6 +155,16 @@ public class ProductController {
             List<ProductVariant> variants,
             UUID userId
     ) {
+        if (userId == null) {
+            OutputUtil.printWarning("Please log in first to add items to your cart.");
+            return;
+        }
+
+        if (cartService == null) {
+            OutputUtil.printError("Cart service is not available.");
+            return;
+        }
+
         if (variants == null || variants.isEmpty()) {
             OutputUtil.printError("This product has no variants.");
             return;
@@ -142,13 +172,23 @@ public class ProductController {
 
         productUI.displayVariants(variants);
 
+        OutputUtil.println("[0] Cancel");
         int choice = InputUtil.readInt(
                 "Select variant",
-                1,
+                0,
                 variants.size()
         );
 
+        if (choice == 0) {
+            return;
+        }
+
         ProductVariant variant = variants.get(choice - 1);
+
+        if (variant.getStockQuantity() == null || variant.getStockQuantity() <= 0) {
+            OutputUtil.printError("Sorry, this variant is currently out of stock.");
+            return;
+        }
 
         int quantity = InputUtil.readInt(
                 "Quantity",
@@ -156,7 +196,7 @@ public class ProductController {
                 variant.getStockQuantity()
         );
 
-        cartController.addToCart(
+        cartService.addToCart(
                 userId,
                 variant.getId(),
                 quantity

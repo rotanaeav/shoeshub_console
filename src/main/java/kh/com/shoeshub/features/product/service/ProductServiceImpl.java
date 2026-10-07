@@ -59,6 +59,7 @@ public class ProductServiceImpl implements ProductService {
     // Admin view: every product that is not deleted (active and inactive)
     @Override
     public List<Product> getAllProducts() {
+        requireStaff();
         return productRepository.findAll();
     }
 

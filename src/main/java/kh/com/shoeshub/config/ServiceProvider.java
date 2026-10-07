@@ -78,6 +78,30 @@ public class ServiceProvider {
 
         return new WishlistController(wishlistService);
     }
+    public static CartService getCartService(Security security) {
+        AuthorizationService authorizationService = new AuthorizationService(security);
+        CartRepository cartRepository = new CartRepositoryImpl();
+        ProductVariantRepository productVariantRepository = new ProductVariantRepositoryImpl();
+        return new CartServiceImpl(cartRepository, productVariantRepository, authorizationService);
+    }
+
+    public static WishlistService getWishlistService(AuthorizationService authorizationService) {
+        WishlistRepository wishlistRepository = new WishlistRepositoryImpl();
+        return new WishlistServiceImpl(wishlistRepository, authorizationService);
+    }
+
+    public static ProductController getProductController(
+            AuthorizationService authorizationService,
+            CartService cartService,
+            WishlistService wishlistService
+    ) {
+        return new ProductController(
+                authorizationService,
+                cartService,
+                wishlistService
+        );
+    }
+
     public static ProductController getProductController(
             AuthorizationService authorizationService,
             WishlistController wishlistController,
@@ -86,10 +110,8 @@ public class ServiceProvider {
     ) {
         return new ProductController(
                 authorizationService,
-                wishlistController,
-                cartController,
-                userController
+                null,
+                null
         );
     }
-
 }
