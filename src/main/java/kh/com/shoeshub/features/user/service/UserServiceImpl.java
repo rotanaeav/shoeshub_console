@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.toEntity(request);
 
         user.setPasswordHash(PasswordUtil.hashPassword(request.password()));
-        user.setRole(UserRole.CUSTOMER);
+        user.setRole(request.role());
 
         Timestamp sqlTimestamp = new Timestamp(System.currentTimeMillis());
 

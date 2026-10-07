@@ -1,5 +1,7 @@
 package kh.com.shoeshub.features.user.dto;
 
+import kh.com.shoeshub.features.user.UserRole;
+
 import java.time.LocalDate;
 
 public record CreateUserRequest(
@@ -9,7 +11,8 @@ public record CreateUserRequest(
         String phone,
         LocalDate dob,
         String gender,
-        String address
+        String address,
+        UserRole role
 ) {
 
 }
