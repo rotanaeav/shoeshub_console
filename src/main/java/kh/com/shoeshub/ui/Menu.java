@@ -58,7 +58,7 @@ public class Menu {
             int choice = InputUtil.readInt("Choose menu", 0, 4);
 
             switch (choice) {
-                case 1 -> productController.handleListProducts();
+                case 1 -> productController.handleBrowseProducts();
                 case 2 -> productController.handleSearchProducts();
                 case 3 -> handleLogin();
                 case 4 -> authUI.handleRegister();
@@ -95,19 +95,24 @@ public class Menu {
             OutputUtil.println(" [5] Payment Simulation & History");
             OutputUtil.println(" [6] Product Reviews & Rating");
             OutputUtil.println(" [7] My Profile");
+            OutputUtil.println(" [8] Search Products");
+            OutputUtil.println(" [9] Filter by Category");
             OutputUtil.println(" [0] Logout");
 
-            int choice = InputUtil.readInt("Choose menu", 0, 7);
+            int choice = InputUtil.readInt("Choose menu", 0, 9);
 
             switch (choice) {
-                case 1 -> productController.handleListProducts();
+                case 1 -> productController.handleBrowseProducts();
                 case 2 -> cartUI.showCartMenu(userController.getCurrentUserCtrl().id());
                 case 3 -> wishlistUI.showWishlistMenu();
                 case 4 -> orderController.handleViewOrderHistory();
                 case 5 -> paymentController.handleViewTransactionHistory();
                 case 6 -> reviewController.handleAddReview();
                 case 7 -> userUI.handleViewProfile();
+                case 8 -> productController.handleSearchProducts();
+                case 9 -> productController.handleFilterByCategory();
                 case 0 -> {
+                    security.logout();
                     OutputUtil.printInfo("Logged out successfully.");
                     return;
                 }
@@ -131,12 +136,13 @@ public class Menu {
 
             switch (choice) {
                 case 1 -> userUI.handleUserManagement(); // Admin-only privilege!
-                case 2 -> productController.handleCreateProduct();
-                case 3 -> categoryController.handleListCategories();
+                case 2 -> productController.showMenu();
+                case 3 -> categoryController.showMenu();
                 case 4 -> orderController.handleUpdateOrderStatus();
                 case 5 -> reportController.handleViewRevenue();
                 case 6 -> userUI.handleViewProfile();
                 case 0 -> {
+                    security.logout();
                     OutputUtil.printInfo("Logged out successfully.");
                     return;
                 }
@@ -158,12 +164,13 @@ public class Menu {
             int choice = InputUtil.readInt("Choose menu", 0, 5);
 
             switch (choice) {
-                case 1 -> productController.handleCreateProduct();
-                case 2 -> categoryController.handleListCategories();
+                case 1 -> productController.showMenu();
+                case 2 -> categoryController.showMenu();
                 case 3 -> orderController.handleUpdateOrderStatus();
                 case 4 -> reportController.handleViewRevenue();
                 case 5 -> userUI.handleViewProfile();
                 case 0 -> {
+                    security.logout();
                     OutputUtil.printInfo("Logged out successfully.");
                     return;
                 }
