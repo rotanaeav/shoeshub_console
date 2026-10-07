@@ -44,4 +44,9 @@ public class CartController {
     public void clearCart(UUID userId) {
         cartService.clearCart(userId);
     }
+
+    public void handleViewCart(UUID userId) {
+        CartUI cartUI = new CartUI(this);
+        cartUI.showCartMenu(userId);
+    }
 }
