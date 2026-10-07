@@ -1,5 +1,6 @@
 package kh.com.shoeshub.features.order;
 
+import kh.com.shoeshub.authorize.AuthorizationService;
 import kh.com.shoeshub.features.order.service.OrderService;
 import kh.com.shoeshub.features.order.service.OrderServiceImpl;
 
@@ -8,8 +9,18 @@ import java.util.UUID;
 
 public class OrderController {
 
-    private final OrderService orderService = new OrderServiceImpl();
+    private final AuthorizationService authorizationService;
+    private final OrderService orderService;
     private final OrderUI orderUI = new OrderUI();
+
+    public OrderController(AuthorizationService authorizationService, OrderService orderService) {
+        this.authorizationService = authorizationService;
+        this.orderService = orderService;
+    }
+
+    public OrderController() {
+        this(null, new OrderServiceImpl());
+    }
 
     public void handleViewOrderHistory() {
         // TODO: Implement view order history

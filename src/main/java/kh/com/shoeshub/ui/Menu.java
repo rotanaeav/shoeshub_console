@@ -36,7 +36,7 @@ public class Menu {
             ServiceProvider.getCartService(security),
             ServiceProvider.getWishlistService(authorizationService)
     );
-    private static final OrderController orderController = new OrderController();
+    private static final OrderController orderController = ServiceProvider.getOrderController(authorizationService);
     private static final PaymentController paymentController = new PaymentController();
     private static final ReviewController reviewController = new ReviewController();
     private static final ReportController reportController = new ReportController();
