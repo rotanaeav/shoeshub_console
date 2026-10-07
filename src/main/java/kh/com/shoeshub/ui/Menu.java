@@ -103,9 +103,11 @@ public class Menu {
             OutputUtil.println(" [5] Payment Simulation & History");
             OutputUtil.println(" [6] Product Reviews & Rating");
             OutputUtil.println(" [7] My Profile");
+            OutputUtil.println(" [8] Search Products");
+            OutputUtil.println(" [9] Filter by Category");
             OutputUtil.println(" [0] Logout");
 
-            int choice = InputUtil.readInt("Choose menu", 0, 7);
+            int choice = InputUtil.readInt("Choose menu", 0, 9);
 
             switch (choice) {
                 case 1 -> productController.handleBrowseProducts(
@@ -117,6 +119,8 @@ public class Menu {
                 case 5 -> paymentController.handleViewTransactionHistory();
                 case 6 -> reviewController.handleAddReview();
                 case 7 -> userUI.handleViewProfile();
+                case 8 -> productController.handleSearchProducts();
+                case 9 -> productController.handleFilterByCategory();
                 case 0 -> {
                     security.logout();
                     OutputUtil.printInfo("Logged out successfully.");
