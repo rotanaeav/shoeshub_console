@@ -16,6 +16,7 @@ import kh.com.shoeshub.features.review.ReviewController;
 import kh.com.shoeshub.features.user.UserController;
 import kh.com.shoeshub.features.user.UserUI;
 import kh.com.shoeshub.features.wishlist.WishlistController;
+import kh.com.shoeshub.features.wishlist.WishlistUI;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
 
@@ -28,7 +29,7 @@ public class Menu {
     private static final ProductController productController = new ProductController(ServiceProvider.getAuthorizationService(security));
     private static final CategoryController categoryController = new CategoryController(ServiceProvider.getAuthorizationService(security));
     private static final CartController cartController = ServiceProvider.getCartController(security);
-    private static final WishlistController wishlistController = new WishlistController();
+    private static final WishlistController wishlistController = ServiceProvider.getWishlistController(ServiceProvider.getAuthorizationService(security));
     private static final OrderController orderController = new OrderController();
     private static final PaymentController paymentController = new PaymentController();
     private static final ReviewController reviewController = new ReviewController();
@@ -38,6 +39,7 @@ public class Menu {
     private static final AuthUI authUI = new AuthUI(security, authService, userController);
     private static final UserUI userUI = new UserUI(security, userController);
     private static final CartUI cartUI = new CartUI(cartController);
+    private static final WishlistUI wishlistUI = new WishlistUI(wishlistController);
 
     /**
      * 1. Public / Guest Menu (Main Switch)
@@ -100,7 +102,7 @@ public class Menu {
             switch (choice) {
                 case 1 -> productController.handleListProducts();
                 case 2 -> cartUI.showCartMenu(userController.getCurrentUserCtrl().id());
-                case 3 -> wishlistController.handleViewWishlist();
+                case 3 -> wishlistUI.showWishlistMenu();
                 case 4 -> orderController.handleViewOrderHistory();
                 case 5 -> paymentController.handleViewTransactionHistory();
                 case 6 -> reviewController.handleAddReview();

@@ -18,6 +18,11 @@ import kh.com.shoeshub.features.user.repository.UserRepositoryImpl;
 import kh.com.shoeshub.features.user.service.UserService;
 import kh.com.shoeshub.features.user.service.UserServiceImpl;
 import kh.com.shoeshub.features.user.service.UserValidator;
+import kh.com.shoeshub.features.wishlist.WishlistController;
+import kh.com.shoeshub.features.wishlist.repository.WishlistRepository;
+import kh.com.shoeshub.features.wishlist.repository.WishlistRepositoryImpl;
+import kh.com.shoeshub.features.wishlist.service.WishlistService;
+import kh.com.shoeshub.features.wishlist.service.WishlistServiceImpl;
 
 public class ServiceProvider {
     public static UserController getUserController(Security security) {
@@ -52,5 +57,21 @@ public class ServiceProvider {
             Security security
     ) {
         return new AuthorizationService(security);
+    }
+
+    public static WishlistController getWishlistController(
+            AuthorizationService authorizationService
+    ) {
+
+        WishlistRepository wishlistRepository =
+                new WishlistRepositoryImpl();
+
+        WishlistService wishlistService =
+                new WishlistServiceImpl(
+                        wishlistRepository,
+                        authorizationService
+                );
+
+        return new WishlistController(wishlistService);
     }
 }
