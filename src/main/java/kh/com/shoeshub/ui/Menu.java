@@ -62,11 +62,13 @@ public class Menu {
 
         while (true) {
             OutputUtil.printHeader("MAIN MENU");
-            OutputUtil.println(" [1] Browse Products");
-            OutputUtil.println(" [2] Search Products");
-            OutputUtil.println(" [3] Login");
-            OutputUtil.println(" [4] Register");
-            OutputUtil.println(" [0] Exit Application");
+            OutputUtil.println("""
+                            [1] BROWSE PRODUCTS
+                            [2] SEARCH PRODUCTS
+                            [3] LOGIN
+                            [4] REGISTER
+                            [0] EXIT APPLICATION
+                            """);
 
             int choice = InputUtil.readInt("Choose menu", 0, 4);
 
@@ -77,7 +79,7 @@ public class Menu {
                 case 4 -> handleRegister();
                 case 0 -> {
                     security.logout();
-                    OutputUtil.printSuccess("Thank you for visiting ShoesHub. Goodbye!");
+                    OutputUtil.printInfo("Logged out successfully.");
                     return;
                 }
                 default -> OutputUtil.printError("Invalid menu choice.");
@@ -141,7 +143,7 @@ public class Menu {
             switch (choice) {
 //                case 1 -> productController.handleListProducts();
                 case 1 -> productController.handleBrowseProducts();
-                case 2 -> cartController.handleViewCart(security.getCurrentUser().id());
+                case 2 -> cartController.handleViewCart();
                 case 3 -> wishlistController.handleViewWishlist();
                 case 4 -> orderController.handleViewOrderHistory();
                 case 5 -> paymentController.handleViewTransactionHistory();
