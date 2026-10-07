@@ -46,15 +46,24 @@ public class AuthUI {
             String phone =
                     InputUtil.readRequiredText("Phone");
 
-            LocalDate dob = LocalDate.parse(
-                    InputUtil.readRequiredText(
-                            "Date of birth (YYYY-MM-DD)"
-                    )
-            );
+            LocalDate dob;
+            while (true) {
+                try {
+                    dob = LocalDate.parse(InputUtil.readRequiredText("Date of birth (YYYY-MM-DD)"));
+                    break;
+                } catch (Exception e) {
+                    OutputUtil.printError("Invalid date format. Example: 2000-01-15");
+                }
+            }
 
-            String gender =
-                    InputUtil.readRequiredText("Gender")
-                            .toUpperCase();
+            String gender;
+            while (true) {
+                gender = InputUtil.readRequiredText("Gender (MALE / FEMALE)").trim().toUpperCase();
+                if (gender.equals("MALE") || gender.equals("FEMALE")) {
+                    break;
+                }
+                OutputUtil.printError("Gender must be either MALE or FEMALE.");
+            }
 
             String address =
                     InputUtil.readText("Address (optional)");

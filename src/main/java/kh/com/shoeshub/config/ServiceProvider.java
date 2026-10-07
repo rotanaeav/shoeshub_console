@@ -78,7 +78,8 @@ public class ServiceProvider {
                         authorizationService
                 );
 
-        return new WishlistController(wishlistService);
+        ProductService productService = new ProductServiceImpl(authorizationService);
+        return new WishlistController(wishlistService, productService);
     }
     public static CartService getCartService(Security security) {
         AuthorizationService authorizationService = new AuthorizationService(security);

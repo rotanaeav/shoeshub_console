@@ -1,11 +1,13 @@
 package kh.com.shoeshub.features.wishlist;
 
+import kh.com.shoeshub.features.product.Product;
 import kh.com.shoeshub.features.wishlist.mapper.WishlistResponse;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
+import kh.com.shoeshub.utils.TableUtil;
+import org.nocrala.tools.texttablefmt.Table;
 
 import java.util.List;
-import java.util.UUID;
 
 public class WishlistUI {
 
@@ -16,9 +18,7 @@ public class WishlistUI {
     }
 
     public void showWishlistMenu() {
-
         while (true) {
-
             OutputUtil.printHeader("MY WISHLIST");
 
             OutputUtil.println("""
@@ -38,87 +38,99 @@ public class WishlistUI {
                     case 0 -> {
                         return;
                     }
-                    default -> OutputUtil.printError(
-                            "Invalid menu choice."
-                    );
+                    default -> OutputUtil.printError("Invalid menu choice.");
                 }
             } catch (Exception e) {
-                OutputUtil.printError(e.getMessage());
+                OutputUtil.printError(e.getMessage() != null ? e.getMessage() : "An error occurred.");
             }
         }
     }
 
     private void viewWishlist() {
-
         OutputUtil.printHeader("MY WISHLIST");
 
-        List<WishlistResponse> wishlists =
-                wishlistController.getMyWishlist();
+        List<WishlistResponse> wishlists = wishlistController.getMyWishlist();
 
         if (wishlists.isEmpty()) {
-            OutputUtil.println("Your wishlist is empty.");
+            OutputUtil.printInfo("Your wishlist is empty.");
             return;
         }
 
-        int number = 1;
-
-        for (WishlistResponse item : wishlists) {
-
-            OutputUtil.println("----------------------------");
-            OutputUtil.println("[" + number + "]");
-            OutputUtil.println("Product     : " + item.getProductName());
-            OutputUtil.println("SKU         : " + item.getSku());
-            OutputUtil.println("Price       : $" + item.getPrice());
-
-            if (item.getDescription() != null
-                    && !item.getDescription().isBlank()) {
-
-                OutputUtil.println(
-                        "Description : " + item.getDescription()
-                );
-            }
-
-            number++;
-        }
-
-        OutputUtil.println("----------------------------");
+        renderWishlistTable(wishlists);
     }
 
     private void addToWishlist() {
-
         OutputUtil.printHeader("ADD TO WISHLIST");
 
-        UUID productId = InputUtil.readUUID(
-                "Enter Product ID"
-        );
+        List<Product> products = wishlistController.getActiveProducts();
+        if (products.isEmpty()) {
+            OutputUtil.printWarning("No products available to add to wishlist.");
+            return;
+        }
 
-        wishlistController.addToWishlist(productId);
+        OutputUtil.printSubHeader("Select a Product");
+        Table productTable = TableUtil.createTable(4, "#", "SKU", "PRODUCT NAME", "PRICE ($)");
+        for (int i = 0; i < products.size(); i++) {
+            Product p = products.get(i);
+            productTable.addCell(String.valueOf(i + 1));
+            productTable.addCell(p.getSku() != null ? p.getSku() : "-");
+            productTable.addCell(p.getName());
+            productTable.addCell(p.getPrice() != null ? String.format("%.2f", p.getPrice()) : "0.00");
+        }
+        TableUtil.render(productTable);
 
-        OutputUtil.printSuccess(
-                "Product added to wishlist successfully."
-        );
+        OutputUtil.println("[0] Cancel");
+        int choice = InputUtil.readInt("Select product #", 0, products.size());
+        if (choice == 0) {
+            OutputUtil.println("Add to wishlist cancelled.");
+            return;
+        }
+
+        Product selected = products.get(choice - 1);
+        wishlistController.addToWishlist(selected.getId());
+        OutputUtil.printSuccess("Added '" + selected.getName() + "' to your wishlist successfully.");
     }
 
     private void removeFromWishlist() {
-
         OutputUtil.printHeader("REMOVE FROM WISHLIST");
 
-        UUID productId = InputUtil.readUUID(
-                "Enter Product ID"
-        );
+        List<WishlistResponse> wishlists = wishlistController.getMyWishlist();
+        if (wishlists.isEmpty()) {
+            OutputUtil.printInfo("Your wishlist is empty.");
+            return;
+        }
 
-        String confirmation =
-                InputUtil.readText("Are you sure? (y/n)");
+        renderWishlistTable(wishlists);
 
-        if (!confirmation.equalsIgnoreCase("y")) {
+        OutputUtil.println("[0] Cancel");
+        int choice = InputUtil.readInt("Select item # to remove", 0, wishlists.size());
+        if (choice == 0) {
             OutputUtil.println("Remove cancelled.");
             return;
         }
 
-        wishlistController.removeFromWishlist(productId);
+        WishlistResponse selected = wishlists.get(choice - 1);
+        boolean confirmed = InputUtil.readConfirm("Are you sure you want to remove '" + selected.getProductName() + "' from your wishlist?");
+        if (!confirmed) {
+            OutputUtil.println("Remove cancelled.");
+            return;
+        }
 
-        OutputUtil.printSuccess(
-                "Product removed from wishlist successfully."
-        );
+        wishlistController.removeFromWishlist(selected.getProductId());
+        OutputUtil.printSuccess("'" + selected.getProductName() + "' removed from wishlist successfully.");
+    }
+
+    private void renderWishlistTable(List<WishlistResponse> wishlists) {
+        Table table = TableUtil.createTable(4, "#", "SKU", "PRODUCT", "PRICE ($)");
+
+        for (int i = 0; i < wishlists.size(); i++) {
+            WishlistResponse item = wishlists.get(i);
+            table.addCell(String.valueOf(i + 1));
+            table.addCell(item.getSku() != null ? item.getSku() : "-");
+            table.addCell(item.getProductName());
+            table.addCell(item.getPrice() != null ? String.format("%.2f", item.getPrice()) : "0.00");
+        }
+
+        TableUtil.render(table);
     }
 }
