@@ -1,5 +1,6 @@
 package kh.com.shoeshub.features.product;
 
+import kh.com.shoeshub.exception.NotFoundException;
 import kh.com.shoeshub.features.category.Category;
 import kh.com.shoeshub.features.product.dto.CreateProductRequest;
 import kh.com.shoeshub.utils.InputUtil;
@@ -13,23 +14,24 @@ import java.util.stream.Collectors;
 
 public class ProductUI {
 
-    public void displayProductMenu() {
-        // TODO: Display Product management menu
-        OutputUtil.printHeader("Product Management");
-        OutputUtil.println("""
-                [1]  LIST ALL PRODUCT
-                [2]  SEARCH PRODUCTS BY NAME
-                [3]  FILTER BY CATEGORY
-                [4]  VIEW PRODUCT DETAILS
-                [5]  ADD PRODUCT
-                [6]  UPDATE PRODUCT
-                [7]  DELETE PRODUCT
-                [8]  ADD VARIANT (size / color / stock)
-                [9]  UPDATE STOCK
-                [10] TOGGLE ACTIVE / INACTIVE
-                [0]  BACK
-                 """);
+    public int displayProductMenu() {
 
+        OutputUtil.printHeader("PRODUCT MANAGEMENT");
+        OutputUtil.println("""
+            [1]  LIST ALL PRODUCT
+            [2]  SEARCH PRODUCTS BY NAME
+            [3]  FILTER BY CATEGORY
+            [4]  VIEW PRODUCT DETAILS
+            [5]  ADD PRODUCT
+            [6]  UPDATE PRODUCT
+            [7]  DELETE PRODUCT
+            [8]  ADD VARIANT (size / color / stock)
+            [9]  UPDATE STOCK
+            [10] TOGGLE ACTIVE / INACTIVE
+            [0]  BACK
+            """);
+
+        return InputUtil.readInt("Choose an option", 0, 10);
     }
 
     // Shows the categories and asks for one ID that really exists in the list
@@ -54,6 +56,49 @@ public class ProductUI {
             }
             OutputUtil.printError("Please choose an ID from the list above.");
         }
+    }
+
+    public String readSearchKeyword() {
+        return InputUtil.readRequiredText("Search keyword");
+    }
+    public int readStockQuantity() {
+        return InputUtil.readInt("New stock quantity", 0, 100000);
+    }
+
+    public boolean readConfirmation(String message) {
+        return InputUtil.readConfirm(message);
+    }
+
+    public Product selectProduct(List<Product> products, Map<Short, String> categoryNames) {
+        if (products == null || products.isEmpty()) {
+            throw new NotFoundException("No products available.");
+        }
+
+        displayProductChoices(products, categoryNames);
+
+        int choice = InputUtil.readInt(
+                "Select product number (1-" + products.size() + ")",
+                1,
+                products.size()
+        );
+
+        return products.get(choice - 1);
+    }
+
+    public ProductVariant selectVariant(List<ProductVariant> variants) {
+        if (variants == null || variants.isEmpty()) {
+            throw new NotFoundException("This product has no variants yet.");
+        }
+
+        displayVariants(variants);
+
+        int choice = InputUtil.readInt(
+                "Select variant number (1-" + variants.size() + ")",
+                1,
+                variants.size()
+        );
+
+        return variants.get(choice - 1);
     }
 
     public CreateProductRequest getProductInput(List<Category> categories) {
