@@ -123,15 +123,24 @@ public class UserUI {
             String phone =
                     InputUtil.readRequiredText("Phone");
 
-            LocalDate dob = LocalDate.parse(
-                    InputUtil.readRequiredText(
-                            "Date of birth (YYYY-MM-DD)"
-                    )
-            );
+            LocalDate dob;
+            while (true) {
+                try {
+                    dob = LocalDate.parse(InputUtil.readRequiredText("Date of birth (YYYY-MM-DD)"));
+                    break;
+                } catch (Exception e) {
+                    OutputUtil.printError("Invalid date format. Example: 2000-01-15");
+                }
+            }
 
-            String gender =
-                    InputUtil.readRequiredText("Gender")
-                            .toUpperCase();
+            String gender;
+            while (true) {
+                gender = InputUtil.readRequiredText("Gender (MALE / FEMALE)").trim().toUpperCase();
+                if (gender.equals("MALE") || gender.equals("FEMALE")) {
+                    break;
+                }
+                OutputUtil.printError("Gender must be either MALE or FEMALE.");
+            }
 
             String address =
                     InputUtil.readText("Address (optional)");
@@ -181,15 +190,24 @@ public class UserUI {
             String phone =
                     InputUtil.readRequiredText("Phone");
 
-            LocalDate dob = LocalDate.parse(
-                    InputUtil.readRequiredText(
-                            "Date of birth (YYYY-MM-DD)"
-                    )
-            );
+            LocalDate dob;
+            while (true) {
+                try {
+                    dob = LocalDate.parse(InputUtil.readRequiredText("Date of birth (YYYY-MM-DD)"));
+                    break;
+                } catch (Exception e) {
+                    OutputUtil.printError("Invalid date format. Example: 2000-01-15");
+                }
+            }
 
-            String gender =
-                    InputUtil.readRequiredText("Gender")
-                            .toUpperCase();
+            String gender;
+            while (true) {
+                gender = InputUtil.readRequiredText("Gender (MALE / FEMALE)").trim().toUpperCase();
+                if (gender.equals("MALE") || gender.equals("FEMALE")) {
+                    break;
+                }
+                OutputUtil.printError("Gender must be either MALE or FEMALE.");
+            }
 
             String address =
                     InputUtil.readText("Address (optional)");
@@ -322,12 +340,41 @@ public class UserUI {
                             "Date of birth (YYYY-MM-DD)"
                     );
 
-            LocalDate dateOfBirth = dobInput.isBlank()
-                            ? null
-                            : LocalDate.parse(dobInput);
+            LocalDate dateOfBirth = null;
+            if (!dobInput.isBlank()) {
+                while (true) {
+                    try {
+                        dateOfBirth = LocalDate.parse(dobInput.trim());
+                        break;
+                    } catch (Exception e) {
+                        OutputUtil.printError("Invalid date format. Example: 2000-01-15 (or leave empty to keep)");
+                        dobInput = InputUtil.readText("Date of birth (YYYY-MM-DD)");
+                        if (dobInput.isBlank()) {
+                            dateOfBirth = null;
+                            break;
+                        }
+                    }
+                }
+            }
 
-            String gender =
-                    InputUtil.readText("Gender");
+            String genderInput =
+                    InputUtil.readText("Gender (MALE / FEMALE)");
+
+            String gender = null;
+            if (!genderInput.isBlank()) {
+                while (true) {
+                    String g = genderInput.trim().toUpperCase();
+                    if (g.equals("MALE") || g.equals("FEMALE")) {
+                        gender = g;
+                        break;
+                    }
+                    OutputUtil.printError("Gender must be either MALE or FEMALE (or leave empty to keep).");
+                    genderInput = InputUtil.readText("Gender (MALE / FEMALE)");
+                    if (genderInput.isBlank()) {
+                        break;
+                    }
+                }
+            }
 
             String address =
                     InputUtil.readText("Address");

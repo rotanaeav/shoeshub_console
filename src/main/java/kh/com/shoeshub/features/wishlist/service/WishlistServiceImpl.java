@@ -7,6 +7,10 @@ import kh.com.shoeshub.features.wishlist.mapper.WishlistResponse;
 import kh.com.shoeshub.features.wishlist.repository.WishlistRepository;
 import kh.com.shoeshub.features.wishlist.repository.WishlistRepositoryImpl;
 
+import kh.com.shoeshub.exception.NotFoundException;
+import kh.com.shoeshub.features.product.repository.ProductRepository;
+import kh.com.shoeshub.features.product.repository.ProductRepositoryImpl;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +19,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     private final WishlistRepository wishlistRepository;
     private final AuthorizationService authorizationService;
+    private final ProductRepository productRepository = new ProductRepositoryImpl();
 
     public WishlistServiceImpl(
             WishlistRepository wishlistRepository,
@@ -26,6 +31,12 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public Wishlist addToWishlist(UUID productId) {
+        if (productId == null) {
+            throw new IllegalArgumentException("Product ID is required.");
+        }
+
+        productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Product not found: " + productId));
 
         AuthenticatedUser currentUser =
                 authorizationService.requireAuthenticated();
