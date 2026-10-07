@@ -1,7 +1,7 @@
 package kh.com.shoeshub.features.cart;
 
+import kh.com.shoeshub.features.cart.dto.CartItemResponse;
 import kh.com.shoeshub.features.cart.service.CartService;
-import kh.com.shoeshub.features.cart.service.CartServiceImpl;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,7 +22,7 @@ public class CartController {
         return cartService.addToCart(userId, variantId, quantity);
     }
 
-    public List<CartItem> getMyCart(UUID userId){
+    public List<CartItemResponse> getMyCart(UUID userId) {
         return cartService.getMyCart(userId);
     }
 

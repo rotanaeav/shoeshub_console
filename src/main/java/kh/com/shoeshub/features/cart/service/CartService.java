@@ -1,6 +1,7 @@
 package kh.com.shoeshub.features.cart.service;
 
 import kh.com.shoeshub.features.cart.CartItem;
+import kh.com.shoeshub.features.cart.dto.CartItemResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +14,7 @@ public interface CartService {
             int quantity
     );
 
-    List<CartItem> getMyCart(UUID userId);
+    List<CartItemResponse> getMyCart(UUID userId);
 
     CartItem updateQuantity(
             UUID userId,

@@ -13,9 +13,17 @@ import kh.com.shoeshub.utils.OutputUtil;
 import java.time.LocalDate;
 
 public class AuthUI {
-    private static final UserController userController = ServiceProvider.getUserController();
-    private static final AuthService authService = ServiceProvider.getAuthService();
-    private static final Security security = new Security();
+    private final Security security;
+    private  final AuthService authService;
+    private final UserController userController;
+
+    public AuthUI(Security security, AuthService authService, UserController userController) {
+        this.security = security;
+        this.authService = authService;
+        this.userController = userController;
+    }
+
+
 
     public void handleRegister() {
 

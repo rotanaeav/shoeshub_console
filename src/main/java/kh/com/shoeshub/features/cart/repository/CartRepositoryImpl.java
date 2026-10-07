@@ -3,6 +3,8 @@ package kh.com.shoeshub.features.cart.repository;
 import kh.com.shoeshub.common.RowMapper;
 import kh.com.shoeshub.config.DBConfig;
 import kh.com.shoeshub.features.cart.CartItem;
+import kh.com.shoeshub.features.cart.dto.CartItemResponse;
+import kh.com.shoeshub.features.cart.mapper.CartItemResponseRowMapper;
 import kh.com.shoeshub.features.cart.mapper.CartItemRowMapper;
 
 import java.sql.Connection;
@@ -16,6 +18,8 @@ import java.util.UUID;
 public class CartRepositoryImpl implements CartRepository {
 
     private final RowMapper<CartItem> rowMapper = new CartItemRowMapper();
+
+    private final RowMapper<CartItemResponse> cartItemResponseRowMapper = new CartItemResponseRowMapper();
 
     @Override
     public CartItem save(CartItem entity) {
@@ -206,19 +210,27 @@ public class CartRepositoryImpl implements CartRepository {
     }
 
     @Override
-    public List<CartItem> findByUserId(UUID userId) {
+    public List<CartItemResponse> findByUserId(UUID userId) {
 
         String sql = """
-                SELECT
-                    id,
-                    user_id,
-                    variant_id,
-                    quantity,
-                    is_deleted
-                FROM cart_items
-                WHERE user_id = ?
-                AND is_deleted = FALSE
-                """;
+            SELECT
+                ci.id AS cart_item_id,
+                ci.variant_id,
+                ci.quantity,
+                p.name AS product_name,
+                p.price AS price,
+                pv.size AS size,
+                pv.color AS color
+            FROM cart_items ci
+            JOIN product_variants pv
+                ON ci.variant_id = pv.id
+            JOIN products p
+                ON pv.product_id = p.id
+            WHERE ci.user_id = ?
+            AND ci.is_deleted = FALSE
+            AND pv.is_deleted = FALSE
+            AND p.is_deleted = FALSE
+            """;
 
         try (
                 Connection conn = DBConfig.getInstance().getConnection();
@@ -228,7 +240,7 @@ public class CartRepositoryImpl implements CartRepository {
             ps.setObject(1, userId);
 
             try (ResultSet rs = ps.executeQuery()) {
-                return rowMapper.mapRows(rs);
+                return cartItemResponseRowMapper.mapRows(rs);
             }
 
         } catch (SQLException e) {

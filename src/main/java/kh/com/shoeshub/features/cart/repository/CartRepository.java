@@ -1,6 +1,7 @@
 package kh.com.shoeshub.features.cart.repository;
 
 import kh.com.shoeshub.features.cart.CartItem;
+import kh.com.shoeshub.features.cart.dto.CartItemResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +22,7 @@ public interface CartRepository{
 
         Optional<CartItem> findByUserIdAndVariantId(UUID userId, UUID variantId);
 
-        List<CartItem> findByUserId(UUID userId);
+        List<CartItemResponse> findByUserId(UUID userId);
 
         CartItem updateQuantity(UUID id, int quantity);
 

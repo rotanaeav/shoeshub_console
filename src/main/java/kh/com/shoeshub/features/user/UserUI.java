@@ -1,6 +1,6 @@
 package kh.com.shoeshub.features.user;
 
-import kh.com.shoeshub.config.ServiceProvider;
+import kh.com.shoeshub.authorize.Security;
 import kh.com.shoeshub.features.user.dto.CreateUserRequest;
 import kh.com.shoeshub.features.user.dto.UpdateUserRequest;
 import kh.com.shoeshub.features.user.dto.UserResponse;
@@ -12,13 +12,18 @@ import java.util.List;
 import java.util.UUID;
 
 public class UserUI {
-    private static final UserController userController = ServiceProvider.getUserController();
-    public static void handleUserManagement() {
+    private  final Security security;
+    private  final UserController userController;
+
+    public UserUI(Security security, UserController userController) {
+        this.security = security;
+        this.userController = userController;
+    }
+
+    public  void handleUserManagement() {
 
         while (true) {
-
             OutputUtil.printHeader("USER MANAGEMENT");
-
             OutputUtil.println("""
                 [1] Create Admin
                 [2] Create Seller
@@ -64,7 +69,7 @@ public class UserUI {
         }
     }
 
-    public static void printUser(UserResponse user) {
+    public  void printUser(UserResponse user) {
 
         OutputUtil.println("----------------------------------------");
         OutputUtil.println("ID: " + user.id());
@@ -79,7 +84,24 @@ public class UserUI {
         OutputUtil.println("----------------------------------------");
     }
 
-    public static void handleCreateAdmin() {
+    public  void handleViewProfile() {
+
+        try {
+
+            OutputUtil.printSubHeader("MY PROFILE");
+
+            UserResponse user =
+                    userController.getCurrentUserCtrl();
+
+            printUser(user);
+
+        } catch (Exception e) {
+
+            OutputUtil.printError(e.getMessage());
+        }
+    }
+
+    public  void handleCreateAdmin() {
 
         try {
 
@@ -137,7 +159,7 @@ public class UserUI {
             OutputUtil.printError(e.getMessage());
         }
     }
-    public static void handleCreateSeller() {
+    public  void handleCreateSeller() {
 
         try {
 
@@ -196,7 +218,7 @@ public class UserUI {
         }
     }
 
-    public static void handleFindUserById() {
+    public  void handleFindUserById() {
 
         try {
 
@@ -222,7 +244,7 @@ public class UserUI {
         }
     }
 
-    public static void handleFindUserByUsername() {
+    public  void handleFindUserByUsername() {
 
         try {
 
@@ -242,7 +264,7 @@ public class UserUI {
         }
     }
 
-    public static void handleFindAllUsers() {
+    public  void handleFindAllUsers() {
 
         try {
 
@@ -271,7 +293,7 @@ public class UserUI {
         return value.isBlank() ? null : value;
     }
 
-    public static void handleUpdateUser() {
+    public  void handleUpdateUser() {
 
         try {
 
@@ -300,8 +322,7 @@ public class UserUI {
                             "Date of birth (YYYY-MM-DD)"
                     );
 
-            LocalDate dateOfBirth =
-                    dobInput.isBlank()
+            LocalDate dateOfBirth = dobInput.isBlank()
                             ? null
                             : LocalDate.parse(dobInput);
 
@@ -340,7 +361,7 @@ public class UserUI {
         }
     }
 
-    public static void handleSoftDeleteUser() {
+    public  void handleSoftDeleteUser() {
 
         try {
 
@@ -384,7 +405,7 @@ public class UserUI {
         }
     }
 
-    public static void handleRestoreUser() {
+    public  void handleRestoreUser() {
 
         try {
 
@@ -414,7 +435,7 @@ public class UserUI {
         }
     }
 
-    public static void handlePermanentDeleteUser() {
+    public  void handlePermanentDeleteUser() {
 
         try {
 
