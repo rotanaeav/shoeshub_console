@@ -18,7 +18,7 @@ public class OrderUI {
 
     // Ask for the new status  (used on line 31)
     public OrderStatus readStatus() {
-        System.out.print("New status (PAID / SHIPPED / DELIVERED): ");
+        System.out.print("New status (PAID / CANCELLED): ");
         return OrderStatus.valueOf(scanner.nextLine().trim().toUpperCase());
     }
 

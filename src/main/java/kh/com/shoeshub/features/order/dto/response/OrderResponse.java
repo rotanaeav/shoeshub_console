@@ -4,7 +4,6 @@ import kh.com.shoeshub.features.order.OrderStatus;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +13,10 @@ public record OrderResponse(
         OrderStatus status,
         BigDecimal totalAmount,
         Timestamp createdAt,
-        Timestamp updateAt,
+        Timestamp updatedAt,
         List<OrderItemResponse> items) {
+
+    public Timestamp updateAt() {
+        return updatedAt;
+    }
 }

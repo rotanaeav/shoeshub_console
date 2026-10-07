@@ -30,16 +30,7 @@ public class OrderServiceImpl implements OrderService {
 
     // The only allowed status steps
     private boolean isAllowedStep(OrderStatus from, OrderStatus to) {
-        if (from == OrderStatus.PENDING && to == OrderStatus.PAID) {
-            return true;
-        }
-        if (from == OrderStatus.PAID && to == OrderStatus.SHIPPED) {
-            return true;
-        }
-        if (from == OrderStatus.SHIPPED && to == OrderStatus.DELIVERED) {
-            return true;
-        }
-        return false;
+        return from != null && from.canChangeTo(to);
     }
 
     @Override

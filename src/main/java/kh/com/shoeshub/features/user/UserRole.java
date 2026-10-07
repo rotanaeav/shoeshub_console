@@ -1,4 +1,4 @@
-package kh.com.shoeshub.features.auth;
+package kh.com.shoeshub.features.user;
 
 public enum UserRole {
     ADMIN,

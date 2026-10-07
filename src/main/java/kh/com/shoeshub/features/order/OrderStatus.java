@@ -1,14 +1,17 @@
 package kh.com.shoeshub.features.order;
 
 public enum OrderStatus {
-    PENDING, PAID, SHIPPED, DELIVERED, CANCELLED;
+    PENDING,
+    PAID,
+    CANCELLED;
 
     public boolean canChangeTo(OrderStatus next) {
+        if (next == null) {
+            return false;
+        }
         return switch (this) {
-            case PENDING -> next == PAID;
-            case PAID -> next == SHIPPED;
-            case SHIPPED -> next == DELIVERED;
-            case DELIVERED, CANCELLED -> false;
+            case PENDING -> next == PAID || next == CANCELLED;
+            case PAID, CANCELLED -> false;
         };
     }
 }

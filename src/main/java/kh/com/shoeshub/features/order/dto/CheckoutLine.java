@@ -1,4 +1,4 @@
-package kh.com.shoeshub.config;
+package kh.com.shoeshub.features.order.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;

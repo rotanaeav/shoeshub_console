@@ -22,4 +22,5 @@ public interface ProductRepository extends CrudRepository<Product, UUID> {
     Optional<Product> findBySku(String sku);
     List<Product> findByCategoryId(Short categoryId);
     List<Product> searchByName(String keyword);
+    String generateNextSku();
 }
