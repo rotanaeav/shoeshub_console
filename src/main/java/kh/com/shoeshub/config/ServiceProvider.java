@@ -11,6 +11,8 @@ import kh.com.shoeshub.features.cart.service.CartService;
 import kh.com.shoeshub.features.cart.service.CartServiceImpl;
 import kh.com.shoeshub.features.product.repository.ProductVariantRepository;
 import kh.com.shoeshub.features.product.repository.ProductVariantRepositoryImpl;
+import kh.com.shoeshub.features.product.service.ProductService;
+import kh.com.shoeshub.features.product.service.ProductServiceImpl;
 import kh.com.shoeshub.features.user.UserController;
 import kh.com.shoeshub.features.user.mapper.UserMapper;
 import kh.com.shoeshub.features.user.repository.UserRepository;
@@ -41,7 +43,8 @@ public class ServiceProvider {
         CartRepository cartRepository = new CartRepositoryImpl();
         ProductVariantRepository productVariantRepository = new ProductVariantRepositoryImpl();
         CartService cartService = new CartServiceImpl(cartRepository, productVariantRepository, authorizationService);
-        CartController cartController = new CartController(cartService);
+        ProductService productService = new ProductServiceImpl(authorizationService);
+        CartController cartController = new CartController(cartService, productService);
 
         return cartController;
     }
