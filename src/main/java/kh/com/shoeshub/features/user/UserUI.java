@@ -1,22 +1,22 @@
 package kh.com.shoeshub.features.user;
 
-import kh.com.shoeshub.authorize.Security;
 import kh.com.shoeshub.features.user.dto.CreateUserRequest;
 import kh.com.shoeshub.features.user.dto.UpdateUserRequest;
 import kh.com.shoeshub.features.user.dto.UserResponse;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
+import kh.com.shoeshub.utils.TableUtil;
+import org.nocrala.tools.texttablefmt.Table;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class UserUI {
-    private  final Security security;
     private  final UserController userController;
 
-    public UserUI(Security security, UserController userController) {
-        this.security = security;
+    public UserUI(UserController userController) {
         this.userController = userController;
     }
 
@@ -69,19 +69,90 @@ public class UserUI {
         }
     }
 
-    public  void printUser(UserResponse user) {
+    public void displayUserDetail(UserResponse user) {
+        if (user == null) {
+            OutputUtil.printInfo("User not found.");
+            return;
+        }
 
-        OutputUtil.println("----------------------------------------");
-        OutputUtil.println("ID: " + user.id());
-        OutputUtil.println("Full Name: " + user.fullName());
-        OutputUtil.println("Username: " + user.username());
-        OutputUtil.println("Phone: " + user.phone());
-        OutputUtil.println("Date of Birth: " + user.dateOfBirth());
-        OutputUtil.println("Gender: " + user.gender());
-        OutputUtil.println("Address: " + user.address());
-        OutputUtil.println("Role: " + user.role());
-        OutputUtil.println("Created At: " + user.createdAt());
-        OutputUtil.println("----------------------------------------");
+        OutputUtil.printSubHeader("USER DETAILS");
+
+        Table table = TableUtil.createTable(2, "FIELD", "VALUE");
+
+        table.addCell("ID");
+        table.addCell(user.id() != null ? user.id().toString() : "-");
+
+        table.addCell("FULL NAME");
+        table.addCell(user.fullName() != null ? user.fullName() : "-");
+
+        table.addCell("USERNAME");
+        table.addCell(user.username() != null ? user.username() : "-");
+
+        table.addCell("PHONE");
+        table.addCell(user.phone() != null ? user.phone() : "-");
+
+        table.addCell("DATE OF BIRTH");
+        table.addCell(user.dateOfBirth() != null ? user.dateOfBirth().toString() : "-");
+
+        table.addCell("GENDER");
+        table.addCell(user.gender() != null ? user.gender() : "-");
+
+        table.addCell("ADDRESS");
+        table.addCell(user.address() != null ? user.address() : "-");
+
+        table.addCell("ROLE");
+        table.addCell(user.role() != null ? user.role().toString() : "-");
+
+        table.addCell("CREATED AT");
+        table.addCell(user.createdAt() != null ? user.createdAt().toString() : "-");
+
+        TableUtil.render(table);
+    }
+
+    private void renderUserTable(List<UserResponse> users, String title, boolean numbered) {
+
+        if (users == null || users.isEmpty()) {
+            OutputUtil.printInfo("No users found.");
+            return;
+        }
+        OutputUtil.printSubHeader(title);
+
+        List<String> headers = new ArrayList<>();
+
+        if (numbered) {
+            headers.add("#");
+        }
+        headers.addAll(List.of(
+                "USERNAME",
+                "FULL NAME",
+                "PHONE",
+                "GENDER",
+                "ROLE",
+                "STATUS"
+        ));
+        Table table = TableUtil.createTable(
+                headers.size(),
+                headers.toArray(new String[0])
+        );
+        int no = 1;
+
+        for (UserResponse user : users) {
+
+            if (numbered) {
+                table.addCell(String.valueOf(no++));
+            }
+            table.addCell(user.username() != null ? user.username() : "-");
+            table.addCell(user.fullName() != null ? user.fullName() : "-");
+            table.addCell(user.phone() != null ? user.phone() : "-");
+            table.addCell(user.gender() != null ? user.gender() : "-");
+            table.addCell(user.role() != null ? user.role().toString() : "-");
+            table.addCell("ACTIVE");
+        }
+        TableUtil.render(table);
+    }
+
+    public void displayUsers(List<UserResponse> users) {
+        renderUserTable(users, "USER LIST", false);
     }
 
     public  void handleViewProfile() {
@@ -93,7 +164,7 @@ public class UserUI {
             UserResponse user =
                     userController.getCurrentUserCtrl();
 
-            printUser(user);
+            displayUserDetail(user);
 
         } catch (Exception e) {
 
@@ -232,7 +303,7 @@ public class UserUI {
             UserResponse user =
                     userController.findUserByIdCtrl(id);
 
-            printUser(user);
+            displayUserDetail(user);
 
         } catch (IllegalArgumentException e) {
 
@@ -256,7 +327,7 @@ public class UserUI {
             UserResponse user =
                     userController.findUserByUsernameCtrl(username);
 
-            printUser(user);
+            displayUserDetail(user);
 
         } catch (Exception e) {
 
@@ -264,27 +335,13 @@ public class UserUI {
         }
     }
 
-    public  void handleFindAllUsers() {
-
+    public void handleFindAllUsers() {
         try {
+            List<UserResponse> users = userController.findAllUsersCtrl();
 
-            OutputUtil.printSubHeader("ALL USERS");
-
-            List<UserResponse> users =
-                    userController.findAllUsersCtrl();
-
-            if (users.isEmpty()) {
-
-                OutputUtil.printInfo("No users found.");
-                return;
-            }
-
-            for (UserResponse user : users) {
-                printUser(user);
-            }
+            displayUsers(users);
 
         } catch (Exception e) {
-
             OutputUtil.printError(e.getMessage());
         }
     }
@@ -323,8 +380,8 @@ public class UserUI {
                     );
 
             LocalDate dateOfBirth = dobInput.isBlank()
-                            ? null
-                            : LocalDate.parse(dobInput);
+                    ? null
+                    : LocalDate.parse(dobInput);
 
             String gender =
                     InputUtil.readText("Gender");
@@ -349,7 +406,7 @@ public class UserUI {
                     "User updated successfully."
             );
 
-            printUser(response);
+            displayUserDetail(response);
 
         } catch (IllegalArgumentException e) {
 
@@ -423,7 +480,7 @@ public class UserUI {
                     "User restored successfully."
             );
 
-            printUser(response);
+            displayUserDetail(response);
 
         } catch (IllegalArgumentException e) {
 

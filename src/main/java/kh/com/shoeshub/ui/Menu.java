@@ -36,7 +36,7 @@ public class Menu {
 
     // UI
     private static final AuthUI authUI = new AuthUI(security, authService, userController);
-    private static final UserUI userUI = new UserUI(security, userController);
+    private static final UserUI userUI = new UserUI(userController);
     private static final CartUI cartUI = new CartUI(cartController);
 
     /**
