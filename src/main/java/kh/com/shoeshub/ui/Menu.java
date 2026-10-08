@@ -37,7 +37,7 @@ public class Menu {
             ServiceProvider.getWishlistService(authorizationService)
     );
     private static final OrderController orderController = ServiceProvider.getOrderController(authorizationService);
-    private static final PaymentController paymentController = new PaymentController();
+    private static final PaymentController paymentController = ServiceProvider.getPaymentController(security);
     private static final ReviewController reviewController = new ReviewController();
     private static final ReportController reportController = new ReportController();
 
@@ -134,19 +134,21 @@ public class Menu {
             OutputUtil.println(" [2] Product Management");
             OutputUtil.println(" [3] Category Management");
             OutputUtil.println(" [4] Order Management");
-            OutputUtil.println(" [5] Reports & Analytics");
-            OutputUtil.println(" [6] My Profile");
+            OutputUtil.println(" [5] Payment Management");
+            OutputUtil.println(" [6] Reports & Analytics");
+            OutputUtil.println(" [7] My Profile");
             OutputUtil.println(" [0] Logout");
 
-            int choice = InputUtil.readInt("Choose menu", 0, 6);
+            int choice = InputUtil.readInt("Choose menu", 0, 7);
 
             switch (choice) {
                 case 1 -> userUI.handleUserManagement(); // Admin-only privilege!
                 case 2 -> productController.showMenu();
                 case 3 -> categoryController.showMenu();
                 case 4 -> orderController.handleOrderManagement();
-                case 5 -> reportController.handleViewRevenue();
-                case 6 -> userUI.handleViewProfile();
+                case 5 -> paymentController.handleAdminPaymentMenu();
+                case 6 -> reportController.handleViewRevenue();
+                case 7 -> userUI.handleViewProfile();
                 case 0 -> {
                     security.logout();
                     OutputUtil.printInfo("Logged out successfully.");
@@ -163,18 +165,20 @@ public class Menu {
             OutputUtil.println(" [1] Product Management");
             OutputUtil.println(" [2] Category Management");
             OutputUtil.println(" [3] Order Management");
-            OutputUtil.println(" [4] Reports & Analytics");
-            OutputUtil.println(" [5] My Profile");
+            OutputUtil.println(" [4] Payment Management");
+            OutputUtil.println(" [5] Reports & Analytics");
+            OutputUtil.println(" [6] My Profile");
             OutputUtil.println(" [0] Logout");
 
-            int choice = InputUtil.readInt("Choose menu", 0, 5);
+            int choice = InputUtil.readInt("Choose menu", 0, 6);
 
             switch (choice) {
                 case 1 -> productController.showMenu();
                 case 2 -> categoryController.showMenu();
                 case 3 -> orderController.handleOrderManagement();
-                case 4 -> reportController.handleViewRevenue();
-                case 5 -> userUI.handleViewProfile();
+                case 4 -> paymentController.handleAdminPaymentMenu();
+                case 5 -> reportController.handleViewRevenue();
+                case 6 -> userUI.handleViewProfile();
                 case 0 -> {
                     security.logout();
                     OutputUtil.printInfo("Logged out successfully.");

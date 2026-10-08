@@ -33,6 +33,7 @@ import kh.com.shoeshub.features.order.repository.OrderRepository;
 import kh.com.shoeshub.features.order.repository.OrderRepositoryImpl;
 import kh.com.shoeshub.features.order.service.OrderService;
 import kh.com.shoeshub.features.order.service.OrderServiceImpl;
+import kh.com.shoeshub.features.payment.PaymentController;
 
 public class ServiceProvider {
     public static UserController getUserController(Security security) {
@@ -133,5 +134,9 @@ public class ServiceProvider {
     public static OrderController getOrderController(AuthorizationService authorizationService) {
         OrderService orderService = getOrderService(authorizationService);
         return new OrderController(authorizationService, orderService);
+    }
+
+    public static PaymentController getPaymentController(Security security) {
+        return new PaymentController(security);
     }
 }
