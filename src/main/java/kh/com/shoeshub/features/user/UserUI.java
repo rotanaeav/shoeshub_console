@@ -310,16 +310,26 @@ public class UserUI {
         }
     }
 
-    public  void handleFindUserById() {
+    private UUID resolveUserId(String prompt) {
+        String input = InputUtil.readRequiredText(prompt).trim();
+        try {
+            return UUID.fromString(input);
+        } catch (IllegalArgumentException e) {
+            UserResponse user = userController.findUserByUsernameCtrl(input);
+            if (user == null || user.id() == null) {
+                throw new IllegalArgumentException("User not found with username: " + input);
+            }
+            return user.id();
+        }
+    }
+
+    public void handleFindUserById() {
 
         try {
 
-            OutputUtil.printSubHeader("FIND USER BY ID");
+            OutputUtil.printSubHeader("FIND USER BY USERNAME OR ID");
 
-            String input =
-                    InputUtil.readRequiredText("User ID");
-
-            UUID id = UUID.fromString(input);
+            UUID id = resolveUserId("Username or User ID");
 
             UserResponse user =
                     userController.findUserByIdCtrl(id);
@@ -377,10 +387,7 @@ public class UserUI {
 
             OutputUtil.printSubHeader("UPDATE USER");
 
-            String input =
-                    InputUtil.readRequiredText("User ID");
-
-            UUID id = UUID.fromString(input);
+            UUID id = resolveUserId("Username or User ID");
 
             OutputUtil.println(
                     "Leave a field empty to keep the current value."
@@ -468,16 +475,13 @@ public class UserUI {
         }
     }
 
-    public  void handleSoftDeleteUser() {
+    public void handleSoftDeleteUser() {
 
         try {
 
             OutputUtil.printSubHeader("SOFT DELETE USER");
 
-            String input =
-                    InputUtil.readRequiredText("User ID");
-
-            UUID id = UUID.fromString(input);
+            UUID id = resolveUserId("Username or User ID");
 
             String confirm =
                     InputUtil.readRequiredText(
@@ -512,16 +516,13 @@ public class UserUI {
         }
     }
 
-    public  void handleRestoreUser() {
+    public void handleRestoreUser() {
 
         try {
 
             OutputUtil.printSubHeader("RESTORE USER");
 
-            String input =
-                    InputUtil.readRequiredText("User ID");
-
-            UUID id = UUID.fromString(input);
+            UUID id = resolveUserId("Username or User ID");
 
             UserResponse response =
                     userController.restoreUserCtrl(id);
@@ -542,16 +543,13 @@ public class UserUI {
         }
     }
 
-    public  void handlePermanentDeleteUser() {
+    public void handlePermanentDeleteUser() {
 
         try {
 
             OutputUtil.printSubHeader("PERMANENT DELETE USER");
 
-            String input =
-                    InputUtil.readRequiredText("User ID");
-
-            UUID id = UUID.fromString(input);
+            UUID id = resolveUserId("Username or User ID");
 
             String confirm =
                     InputUtil.readRequiredText(
