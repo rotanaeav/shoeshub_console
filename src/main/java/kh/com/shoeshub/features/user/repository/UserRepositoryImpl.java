@@ -2,6 +2,7 @@ package kh.com.shoeshub.features.user.repository;
 
 import kh.com.shoeshub.common.RowMapper;
 import kh.com.shoeshub.config.DBConfig;
+import kh.com.shoeshub.exception.AppException;
 import kh.com.shoeshub.features.user.User;
 import kh.com.shoeshub.features.user.mapper.UserRowMapper;
 
@@ -57,7 +58,7 @@ public class UserRepositoryImpl implements UserRepository {
             return entity;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AppException("Failed to save user", e);
         }
     }
 
@@ -75,6 +76,7 @@ public class UserRepositoryImpl implements UserRepository {
                     date_of_birth,
                     gender,
                     address,
+                    is_active,
                     is_deleted,
                     created_at
                 FROM users
@@ -97,7 +99,7 @@ public class UserRepositoryImpl implements UserRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AppException("Failed to find user by ID", e);
         }
     }
 
@@ -114,6 +116,7 @@ public class UserRepositoryImpl implements UserRepository {
                     date_of_birth,
                     gender,
                     address,
+                    is_active,
                     is_deleted,
                     created_at
                 FROM users
@@ -127,7 +130,6 @@ public class UserRepositoryImpl implements UserRepository {
         ) {
             ps.setObject(1, username);
 
-
             try (ResultSet rs = ps.executeQuery()) {
 
                 if (rs.next()) {
@@ -137,7 +139,7 @@ public class UserRepositoryImpl implements UserRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AppException("Failed to find user by username", e);
         }
     }
 
@@ -154,6 +156,7 @@ public class UserRepositoryImpl implements UserRepository {
                     date_of_birth,
                     gender,
                     address,
+                    is_active,
                     is_deleted,
                     created_at
                 FROM users
@@ -176,7 +179,7 @@ public class UserRepositoryImpl implements UserRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AppException("Failed to find user by ID", e);
         }
     }
 
@@ -193,6 +196,7 @@ public class UserRepositoryImpl implements UserRepository {
                     date_of_birth,
                     gender,
                     address,
+                    is_active,
                     is_deleted,
                     created_at
                 FROM users
@@ -208,7 +212,7 @@ public class UserRepositoryImpl implements UserRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AppException("Failed to retrieve users", e);
         }
     }
 
@@ -250,7 +254,7 @@ public class UserRepositoryImpl implements UserRepository {
             return entity;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AppException("Failed to update user", e);
         }
     }
 
@@ -272,9 +276,8 @@ public class UserRepositoryImpl implements UserRepository {
 
             return ps.executeUpdate() > 0;
 
-
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AppException("Failed to delete user", e);
         }
 
     }
@@ -304,9 +307,8 @@ public class UserRepositoryImpl implements UserRepository {
                 return Optional.empty();
             }
 
-
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AppException("Failed to restore user", e);
         }
     }
 
@@ -328,7 +330,7 @@ public class UserRepositoryImpl implements UserRepository {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new AppException("Failed to permanently delete user", e);
         }
 
     }

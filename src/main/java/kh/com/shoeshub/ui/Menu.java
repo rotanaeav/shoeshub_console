@@ -55,7 +55,7 @@ public class Menu {
 
         while (true) {
             OutputUtil.printHeader("MAIN MENU");
-            OutputUtil.println(" [1] Browse Products");
+            OutputUtil.println(" [1] View Products");
             OutputUtil.println(" [2] Search Products");
             OutputUtil.println(" [3] Login");
             OutputUtil.println(" [4] Register");
@@ -94,7 +94,7 @@ public class Menu {
     public static void displayCustomerMenu() {
         while (true) {
             OutputUtil.printHeader("CUSTOMER DASHBOARD");
-            OutputUtil.println(" [1] Browse Products");
+            OutputUtil.println(" [1] View Products");
             OutputUtil.println(" [2] Shopping Cart");
             OutputUtil.println(" [3] Wishlist");
             OutputUtil.println(" [4] My Orders");
