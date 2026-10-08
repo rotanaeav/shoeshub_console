@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+/* Database entity for the payments table. Layer: Entity. */
 @Data
 @Builder
 @NoArgsConstructor
