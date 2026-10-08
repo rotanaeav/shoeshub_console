@@ -33,6 +33,6 @@ public class AuthorizationService {
     }
 
     public boolean hasRole(UserRole role) {
-        return security.getCurrentUser().role() == role;
+        return security.isAuthenticated() && security.getCurrentUser() != null && security.getCurrentUser().role() == role;
     }
 }

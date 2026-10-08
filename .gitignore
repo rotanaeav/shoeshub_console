@@ -42,8 +42,6 @@ bin/
 ### Mac OS ###
 .DS_Store
 src/main/resources/application.properties
-/exports.idea/
 /.idea/.gitignore
 /.idea/misc.xml
-/exports/sales-2026-10-08-2026-10-08-16436283050654716596.csv
 /.idea/vcs.xml

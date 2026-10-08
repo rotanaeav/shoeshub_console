@@ -1,0 +1,9 @@
+sku,name,description,price,category_id,is_active
+"SH-0007","Nike Air Max 90","Classic running sneaker",135.00,1,true
+"SH-0009","Puma Suede Classic","Vintage lifestyle sneakers",75.50,3,true
+"SH-0008","Adidas Ultraboost Light","High performance running shoe",190.00,3,true
+"SH-0006","Loro Piana men","Crafted from glove-soft, water-repellent suede that molds to your foot like a second skin, this iconic slip-on features a hand-stitched toe and the signature non-marking white deck sole.",1399.00,3,true
+"SH-0005","Prada","Latest Season",100.00,1,true
+"SH-0004","The Velvet Aura Block Heel","The Velvet Aura Block Heel is a chic, modern shoe that blends high fashion with daily comfort.",89.00,1,true
+"SH-0003","Luis","",1000.00,1,true
+"SH-0002","Nike","",10.00,1,false

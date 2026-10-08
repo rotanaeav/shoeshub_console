@@ -13,10 +13,12 @@ import kh.com.shoeshub.authorize.AuthorizationService;
 import kh.com.shoeshub.features.wishlist.service.WishlistService;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import kh.com.shoeshub.features.product.service.ProductCsvService;
 import kh.com.shoeshub.features.user.UserRole;
 
 public class ProductController {
@@ -26,6 +28,7 @@ public class ProductController {
     private final AuthorizationService authorizationService;
     private final WishlistService wishlistService;
     private final CartService cartService;
+    private final ProductCsvService productCsvService;
     private final ProductUI productUI = new ProductUI();
 
     public ProductController(
@@ -38,6 +41,7 @@ public class ProductController {
         this.wishlistService = wishlistService;
         this.productService = new ProductServiceImpl(authorizationService);
         this.categoryService = new CategoryServiceImpl(authorizationService);
+        this.productCsvService = new ProductCsvService(authorizationService);
     }
 
     public ProductController(AuthorizationService authorizationService) {
@@ -46,9 +50,10 @@ public class ProductController {
 
     public void showMenu() {
         boolean running = true;
+        boolean isAdmin = authorizationService != null && authorizationService.hasRole(UserRole.ADMIN);
 
         while (running) {
-            int choice = productUI.displayProductMenu();
+            int choice = productUI.displayProductMenu(isAdmin);
 
             switch (choice) {
                 case 1 -> handleListProducts();
@@ -62,9 +67,41 @@ public class ProductController {
                 case 9 -> handleUpdateStock();
                 case 10 -> handleToggleActive();
                 case 11 -> handleDeleteVariant();
+                case 12 -> {
+                    if (isAdmin) handleImportProductsCsv();
+                }
+                case 13 -> {
+                    if (isAdmin) handleExportProductsCsv();
+                }
                 case 0 -> running = false;
             }
         }
+    }
+
+    public void handleExportProductsCsv() {
+        run(() -> {
+            OutputUtil.printSubHeader("EXPORT PRODUCTS TO CSV");
+            Path target = productCsvService.exportProductsToCsv();
+            OutputUtil.printSuccess("Products exported successfully to: " + target);
+        });
+    }
+
+    public void handleImportProductsCsv() {
+        run(() -> {
+            OutputUtil.printSubHeader("IMPORT PRODUCTS FROM CSV");
+            Path samplePath = productCsvService.ensureSampleCsvExists();
+            OutputUtil.printInfo("Sample template available at: " + samplePath);
+
+            String input = InputUtil.readText("Enter CSV file path (leave empty for sample)");
+            Path target = input.isBlank() ? samplePath : Path.of(input.trim());
+
+            ProductCsvService.ImportResult result = productCsvService.importProductsFromCsv(target);
+            productUI.displayImportResult(result);
+
+            if (result.successCount() > 0) {
+                OutputUtil.printSuccess("Import completed! Added " + result.successCount() + " products.");
+            }
+        });
     }
 
     // ------------------------------------------------- customer / guest browse

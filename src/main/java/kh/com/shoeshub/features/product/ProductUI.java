@@ -12,11 +12,32 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import kh.com.shoeshub.features.product.service.ProductCsvService;
+
 public class ProductUI {
 
-    public int displayProductMenu() {
-
+    public int displayProductMenu(boolean isAdmin) {
         OutputUtil.printHeader("PRODUCT MANAGEMENT");
+        if (isAdmin) {
+            OutputUtil.println("""
+                [1]  List All Products
+                [2]  Search Products
+                [3]  Filter by Category
+                [4]  View Product Details
+                [5]  Add Product
+                [6]  Update Product
+                [7]  Delete Product
+                [8]  Add Product Variant
+                [9]  Update Stock
+                [10] Toggle Active Status
+                [11] Delete Variant
+                [12] Import Products (CSV)
+                [13] Export Products (CSV)
+                [0]  Back
+                """);
+            return InputUtil.readInt("Choose an option", 0, 13);
+        }
+
         OutputUtil.println("""
             [1]  List All Products
             [2]  Search Products
@@ -33,6 +54,24 @@ public class ProductUI {
             """);
 
         return InputUtil.readInt("Choose an option", 0, 11);
+    }
+
+    public int displayProductMenu() {
+        return displayProductMenu(false);
+    }
+
+    public void displayImportResult(ProductCsvService.ImportResult result) {
+        OutputUtil.printSubHeader("CSV IMPORT SUMMARY");
+        OutputUtil.println("Total Rows Processed : " + result.totalProcessed());
+        OutputUtil.println("Successfully Imported: " + result.successCount());
+        OutputUtil.println("Errors / Skipped     : " + result.errors().size());
+
+        if (!result.errors().isEmpty()) {
+            OutputUtil.printWarning("Validation errors occurred during import:");
+            for (String err : result.errors()) {
+                OutputUtil.println(" - " + err);
+            }
+        }
     }
 
     // Shows the categories and asks for one ID that really exists in the list
