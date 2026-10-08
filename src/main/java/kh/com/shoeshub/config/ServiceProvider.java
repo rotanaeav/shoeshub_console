@@ -28,6 +28,12 @@ import kh.com.shoeshub.features.wishlist.repository.WishlistRepository;
 import kh.com.shoeshub.features.wishlist.repository.WishlistRepositoryImpl;
 import kh.com.shoeshub.features.wishlist.service.WishlistService;
 import kh.com.shoeshub.features.wishlist.service.WishlistServiceImpl;
+import kh.com.shoeshub.features.order.OrderController;
+import kh.com.shoeshub.features.order.repository.OrderRepository;
+import kh.com.shoeshub.features.order.repository.OrderRepositoryImpl;
+import kh.com.shoeshub.features.order.service.OrderService;
+import kh.com.shoeshub.features.order.service.OrderServiceImpl;
+import kh.com.shoeshub.features.payment.PaymentController;
 
 public class ServiceProvider {
     public static UserController getUserController(Security security) {
@@ -116,5 +122,21 @@ public class ServiceProvider {
                 null,
                 null
         );
+    }
+
+    public static OrderService getOrderService(AuthorizationService authorizationService) {
+        OrderRepository orderRepository = new OrderRepositoryImpl();
+        CartRepository cartRepository = new CartRepositoryImpl();
+        ProductVariantRepository variantRepository = new ProductVariantRepositoryImpl();
+        return new OrderServiceImpl(orderRepository, cartRepository, variantRepository, authorizationService);
+    }
+
+    public static OrderController getOrderController(AuthorizationService authorizationService) {
+        OrderService orderService = getOrderService(authorizationService);
+        return new OrderController(authorizationService, orderService);
+    }
+
+    public static PaymentController getPaymentController(Security security) {
+        return new PaymentController(security);
     }
 }
