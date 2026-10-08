@@ -21,6 +21,7 @@ public interface ProductService {
     Product setActive(UUID id, boolean active);
 
     ProductVariant addVariant(ProductVariant variant);
+    void deleteVariant(UUID variantId);
     List<ProductVariant> getVariantsByProductId(UUID productId);
     void updateStock(UUID variantId, int newStock);
     Map<UUID, List<ProductVariant>> getVariantsGroupedByProduct();

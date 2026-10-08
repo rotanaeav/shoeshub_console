@@ -28,10 +28,11 @@ public class ProductUI {
             [8]  Add Product Variant
             [9]  Update Stock
             [10] Toggle Active Status
+            [11] Delete Variant
             [0]  Back
             """);
 
-        return InputUtil.readInt("Choose an option", 0, 10);
+        return InputUtil.readInt("Choose an option", 0, 11);
     }
 
     // Shows the categories and asks for one ID that really exists in the list
@@ -181,8 +182,6 @@ public class ProductUI {
         }
         TableUtil.render(table);
     }
-
-    // One row per variant, product columns shown on the first row only
 
     // One row per variant, product columns shown on the first row only
     public void displayProductsWithVariants(List<Product> products,

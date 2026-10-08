@@ -181,12 +181,6 @@ public class ProductVariantRepositoryImpl implements ProductVariantRepository {
         return findById(id)
                 .orElseThrow(() -> new NotFoundException("Variant not found: " + id));
     }
-
-    /**
-     * Used by the order/checkout transaction. The caller owns the connection
-     * (commit, rollback, close), so this method must NOT close it.
-     * Returns false when there is not enough stock.
-     */
     @Override
     public boolean updateStockWithConnection(Connection conn, UUID id, int quantityToDeduct) throws SQLException {
         String sql = """
@@ -226,27 +220,58 @@ public class ProductVariantRepositoryImpl implements ProductVariantRepository {
         }
     }
 
-//    @Override
-//    public List<ProductVariant> findLowStock(int threshold) {
-//        String sql = """
-//                SELECT * FROM product_variants
-//                WHERE stock_quantity <= ? AND is_deleted = FALSE
-//                ORDER BY stock_quantity, product_id;
-//                """;
-//
-//        try (Connection conn = DBConfig.get();
-//             PreparedStatement stmt = conn.prepareStatement(sql)) {
-//
-//            stmt.setInt(1, threshold);
-//            try (ResultSet rs = stmt.executeQuery()) {
-//                return variantMapper.mapRows(rs);
-//            }
-//
-//        } catch (SQLException e) {
-//            throw toAppException("load low-stock variants", e);
-//        }
-//    }
+    @Override
+    public Optional<ProductVariant> findDeleted(UUID productId, BigDecimal size, String color) {
+        String sql = """
+            SELECT * FROM product_variants
+            WHERE product_id = ? AND size = ? AND LOWER(color) = LOWER(?)
+              AND is_deleted = TRUE
+            LIMIT 1;
+            """;
 
+        try (Connection conn = DBConfig.get();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setObject(1, productId);
+            stmt.setBigDecimal(2, size);
+            stmt.setString(3, color);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(variantMapper.mapRow(rs));
+                }
+                return Optional.empty();
+            }
+
+        } catch (SQLException e) {
+            throw toAppException("find deleted variant", e);
+        }
+    }
+
+    @Override
+    public ProductVariant restore(UUID id, String color, int stockQuantity) {
+        String sql = """
+            UPDATE product_variants
+            SET is_deleted = FALSE, color = ?, stock_quantity = ?
+            WHERE id = ? AND is_deleted = TRUE;
+            """;
+
+        try (Connection conn = DBConfig.get();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, color);
+            stmt.setInt(2, stockQuantity);
+            stmt.setObject(3, id);
+
+            if (stmt.executeUpdate() == 0) {
+                throw new NotFoundException("Variant not found: " + id);
+            }
+
+        } catch (SQLException e) {
+            throw toAppException("restore variant", e);
+        }
+        return findById(id)
+                .orElseThrow(() -> new NotFoundException("Variant not found: " + id));
+    }
     private AppException toAppException(String action, SQLException e) {
         if ("23503".equals(e.getSQLState())) {
             return new ValidationException("Product does not exist.");

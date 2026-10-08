@@ -14,6 +14,7 @@ import kh.com.shoeshub.features.user.UserRole;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -151,6 +152,13 @@ public class ProductServiceImpl implements ProductService {
         if (variantRepository.existsVariant(variant.getProductId(), variant.getSize(), variant.getColor())) {
             throw new ValidationException("This product already has a variant with the same size and color.");
         }
+        // Same size and color was deleted before: bring that row back instead of inserting a new one
+        Optional<ProductVariant> deleted =
+                variantRepository.findDeleted(variant.getProductId(), variant.getSize(), variant.getColor());
+        if (deleted.isPresent()) {
+            return variantRepository.restore(
+                    deleted.get().getId(), variant.getColor(), variant.getStockQuantity());
+        }
         return variantRepository.save(variant);
     }
 
@@ -177,6 +185,14 @@ public class ProductServiceImpl implements ProductService {
             throw new ValidationException("Stock quantity cannot be negative.");
         }
         variantRepository.updateStock(variantId, newStock);
+    }
+    @Override
+    public void deleteVariant(UUID variantId) {
+        requireStaff();
+        if (variantId == null) {
+            throw new ValidationException("Variant id is required.");
+        }
+        variantRepository.deleteById(variantId);   // throws NotFoundException if it doesn't exist
     }
     @Override
     public Product setActive(UUID id, boolean active) {

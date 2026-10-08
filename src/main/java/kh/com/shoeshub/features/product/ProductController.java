@@ -61,6 +61,7 @@ public class ProductController {
                 case 8 -> handleAddVariant();
                 case 9 -> handleUpdateStock();
                 case 10 -> handleToggleActive();
+                case 11 -> handleDeleteVariant();
                 case 0 -> running = false;
             }
         }
@@ -285,6 +286,24 @@ public class ProductController {
             int newStock = productUI.readStockQuantity();
             productService.updateStock(variant.getId(), newStock);
             OutputUtil.printSuccess("Stock updated to " + newStock + ".");
+        });
+    }
+    public void handleDeleteVariant() {
+        run(() -> {
+            Product product = pickProduct();
+            ProductVariant variant = pickVariant(product.getId());
+            String label = variant.getSize().stripTrailingZeros().toPlainString()
+                    + " / " + variant.getColor();
+
+            if (productUI.readConfirmation(
+                    "Delete variant " + label + " of '" + product.getName() + "'?")) {
+
+                productService.deleteVariant(variant.getId());
+                OutputUtil.printSuccess("Variant " + label + " deleted.");
+
+            } else {
+                OutputUtil.printInfo("Delete cancelled.");
+            }
         });
     }
 
