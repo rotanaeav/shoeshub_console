@@ -48,23 +48,32 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
   }
 
+  private static final String SELECT_WITH_JOINS =
+      """
+      SELECT r.*, u.username AS user_name, p.name AS product_name
+      FROM reviews r
+      JOIN users u ON u.id = r.user_id
+      JOIN products p ON p.id = r.product_id
+      """;
+
   public Optional<Review> findById(UUID id) {
-    return query("SELECT * FROM reviews WHERE id=? AND NOT is_deleted", id).stream().findFirst();
+    return query(SELECT_WITH_JOINS + " WHERE r.id=? AND NOT r.is_deleted", id).stream().findFirst();
   }
 
   public List<Review> findAll() {
-    return query("SELECT * FROM reviews WHERE NOT is_deleted ORDER BY created_at DESC,id");
+    return query(SELECT_WITH_JOINS + " WHERE NOT r.is_deleted ORDER BY r.created_at DESC, r.id");
   }
 
   public List<Review> findByProductId(UUID id) {
     return query(
-        "SELECT * FROM reviews WHERE product_id=? AND NOT is_deleted ORDER BY created_at DESC,id",
+        SELECT_WITH_JOINS + " WHERE r.product_id=? AND NOT r.is_deleted ORDER BY r.created_at DESC, r.id",
         id);
   }
 
   public List<Review> findByUserId(UUID id) {
     return query(
-        "SELECT * FROM reviews WHERE user_id=? AND NOT is_deleted ORDER BY created_at DESC,id", id);
+        SELECT_WITH_JOINS + " WHERE r.user_id=? AND NOT r.is_deleted ORDER BY r.created_at DESC, r.id",
+        id);
   }
 
   public double getAverageRating(UUID id) {
