@@ -15,4 +15,5 @@ public interface OrderService {
     void cancelOrder(UUID orderId, UUID customerId, boolean isAdmin);
     List<Order> getAllOrders(OrderStatus statusFilter);
     void updateStatus(UUID orderId, OrderStatus newStatus);
+    Order getOrderById(UUID orderId);
 }

@@ -9,6 +9,12 @@ import kh.com.shoeshub.features.user.UserRole;
 import kh.com.shoeshub.utils.InputUtil;
 import kh.com.shoeshub.utils.OutputUtil;
 
+import kh.com.shoeshub.features.order.export.OrderSummaryExporter;
+import kh.com.shoeshub.features.payment.Payment;
+import kh.com.shoeshub.features.payment.PaymentController;
+import kh.com.shoeshub.features.payment.PaymentStatus;
+
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,14 +23,25 @@ public class OrderController {
     private final AuthorizationService authorizationService;
     private final OrderService orderService;
     private final OrderUI orderUI = new OrderUI();
+    private final OrderSummaryExporter orderSummaryExporter = new OrderSummaryExporter();
+    private PaymentController paymentController;
 
-    public OrderController(AuthorizationService authorizationService, OrderService orderService) {
+    public OrderController(AuthorizationService authorizationService, OrderService orderService, PaymentController paymentController) {
         this.authorizationService = authorizationService;
         this.orderService = orderService;
+        this.paymentController = paymentController;
+    }
+
+    public OrderController(AuthorizationService authorizationService, OrderService orderService) {
+        this(authorizationService, orderService, null);
     }
 
     public OrderController() {
-        this(null, new OrderServiceImpl());
+        this(null, new OrderServiceImpl(), null);
+    }
+
+    public void setPaymentController(PaymentController paymentController) {
+        this.paymentController = paymentController;
     }
 
     public void handleViewOrderHistory() {
@@ -59,18 +76,43 @@ public class OrderController {
                 orderUI.displayOrderDetail(detail);
 
                 if (selected.getStatus() == OrderStatus.PENDING) {
-                    OutputUtil.println("\n [1] Cancel This Order");
+                    OutputUtil.println("\n [1] Pay for This Order");
+                    OutputUtil.println(" [2] Cancel This Order");
+                    OutputUtil.println(" [3] Export Order Summary / Receipt");
                     OutputUtil.println(" [0] Back");
-                    int action = InputUtil.readInt("Choose option", 0, 1);
+                    int action = InputUtil.readInt("Choose option", 0, 3);
                     if (action == 1) {
+                        if (paymentController != null) {
+                            Payment payment = paymentController.processOrderPayment(selected.getId(), currentUser.id());
+                            if (payment != null && payment.getStatus() == PaymentStatus.SUCCESS) {
+                                OutputUtil.println("\n [1] Export Updated Receipt");
+                                OutputUtil.println(" [0] Continue");
+                                if (InputUtil.readInt("Choose option", 0, 1) == 1) {
+                                    exportOrderSummary(selected, currentUser.id());
+                                }
+                            }
+                        } else {
+                            OutputUtil.printWarning("Payment service not available directly. Please use Payment Menu.");
+                        }
+                        InputUtil.pressEnter();
+                    } else if (action == 2) {
                         boolean confirmed = InputUtil.readConfirm("Are you sure you want to cancel this order?");
                         if (confirmed) {
                             orderService.cancelOrder(selected.getId(), currentUser.id(), false);
                             OutputUtil.printSuccess("Order cancelled successfully. Stock has been restored.");
                             InputUtil.pressEnter();
                         }
+                    } else if (action == 3) {
+                        exportOrderSummary(selected, currentUser.id());
+                        InputUtil.pressEnter();
                     }
                 } else {
+                    OutputUtil.println("\n [1] Export Order Summary / Receipt");
+                    OutputUtil.println(" [0] Back");
+                    int action = InputUtil.readInt("Choose option", 0, 1);
+                    if (action == 1) {
+                        exportOrderSummary(selected, currentUser.id());
+                    }
                     InputUtil.pressEnter();
                 }
             }
@@ -239,6 +281,20 @@ public class OrderController {
         } catch (Exception e) {
             OutputUtil.printError(e.getMessage() != null ? e.getMessage() : "Checkout failed.");
             return null;
+        }
+    }
+
+    public OrderResponse getOrderDetails(UUID orderId, UUID customerId) {
+        return orderService.getOrderDetail(orderId, customerId, false);
+    }
+
+    private void exportOrderSummary(Order order, UUID customerId) {
+        try {
+            OrderResponse details = orderService.getOrderDetail(order.getId(), customerId, false);
+            Path target = orderSummaryExporter.exportSummary(order, details);
+            OutputUtil.printSuccess("Order summary exported successfully to: " + target.toAbsolutePath());
+        } catch (Exception e) {
+            OutputUtil.printError("Failed to export order summary: " + e.getMessage());
         }
     }
 }

@@ -1,6 +1,14 @@
 package kh.com.shoeshub.features.cart;
 
 import kh.com.shoeshub.features.cart.dto.CartItemResponse;
+import kh.com.shoeshub.features.order.Order;
+import kh.com.shoeshub.features.order.OrderController;
+import kh.com.shoeshub.features.order.dto.response.OrderResponse;
+import kh.com.shoeshub.features.order.export.OrderSummaryExporter;
+import kh.com.shoeshub.features.order.service.OrderService;
+import kh.com.shoeshub.features.payment.Payment;
+import kh.com.shoeshub.features.payment.PaymentController;
+import kh.com.shoeshub.features.payment.PaymentStatus;
 import kh.com.shoeshub.features.product.Product;
 import kh.com.shoeshub.features.product.ProductVariant;
 import kh.com.shoeshub.utils.ColorUtil;
@@ -10,23 +18,29 @@ import kh.com.shoeshub.utils.TableUtil;
 import org.nocrala.tools.texttablefmt.Table;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
-
-import kh.com.shoeshub.features.order.OrderController;
 
 public class CartUI {
 
     private final CartController cartController;
     private final OrderController orderController;
+    private final PaymentController paymentController;
+    private final OrderSummaryExporter orderSummaryExporter = new OrderSummaryExporter();
 
-    public CartUI(CartController cartController, OrderController orderController) {
+    public CartUI(CartController cartController, OrderController orderController, PaymentController paymentController) {
         this.cartController = cartController;
         this.orderController = orderController;
+        this.paymentController = paymentController;
+    }
+
+    public CartUI(CartController cartController, OrderController orderController) {
+        this(cartController, orderController, null);
     }
 
     public CartUI(CartController cartController) {
-        this(cartController, null);
+        this(cartController, null, null);
     }
 
     public void showCartMenu(UUID userId) {
@@ -107,11 +121,49 @@ public class CartUI {
         }
 
         if (orderController != null) {
-            orderController.handleCheckout(userId);
+            Order order = orderController.handleCheckout(userId);
+            if (order != null && paymentController != null) {
+                OutputUtil.println("\nWould you like to pay for this order now?");
+                boolean payNow = InputUtil.readConfirm("Proceed to payment immediately?");
+                if (payNow) {
+                    processImmediatePayment(order, userId);
+                } else {
+                    OutputUtil.printInfo("Order placed with status PENDING.");
+                    OutputUtil.printInfo("You can complete payment anytime from My Orders or Payment menu.");
+                }
+            }
         } else {
             OutputUtil.printError("Order service is currently unavailable.");
         }
         InputUtil.pressEnter();
+    }
+
+    private void processImmediatePayment(Order order, UUID customerId) {
+        OutputUtil.printHeader("PAYMENT FOR ORDER: " + order.getId());
+
+        Payment payment = paymentController.processOrderPayment(order.getId(), customerId);
+        if (payment != null && payment.getStatus() == PaymentStatus.SUCCESS) {
+            promptExportOrderSummary(order, customerId);
+        } else {
+            OutputUtil.printWarning("Payment was not completed. Order remains PENDING.");
+            OutputUtil.printInfo("You can retry payment later from the Payment or My Orders menu.");
+        }
+    }
+
+    private void promptExportOrderSummary(Order order, UUID customerId) {
+        OutputUtil.println("\n [1] Export Order Summary / Receipt to File");
+        OutputUtil.println(" [0] Continue Shopping");
+
+        int choice = InputUtil.readInt("Choose option", 0, 1);
+        if (choice == 1) {
+            try {
+                OrderResponse details = orderController.getOrderDetails(order.getId(), customerId);
+                Path exportPath = orderSummaryExporter.exportSummary(order, details);
+                OutputUtil.printSuccess("Order summary exported successfully to: " + exportPath.toAbsolutePath());
+            } catch (Exception e) {
+                OutputUtil.printError("Failed to export order summary: " + e.getMessage());
+            }
+        }
     }
 
     private void addToCart(UUID userId) {
@@ -252,6 +304,8 @@ public class CartUI {
             OutputUtil.printInfo("Your cart is already empty.");
             return;
         }
+
+        renderCartTable(cartItems);
 
         boolean confirmed = InputUtil.readConfirm("Are you sure you want to clear all items from your cart?");
         if (!confirmed) {

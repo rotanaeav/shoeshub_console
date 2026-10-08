@@ -36,15 +36,16 @@ public class Menu {
             ServiceProvider.getCartService(security),
             ServiceProvider.getWishlistService(authorizationService)
     );
-    private static final OrderController orderController = ServiceProvider.getOrderController(authorizationService);
-    private static final PaymentController paymentController = ServiceProvider.getPaymentController(security);
+    private static final kh.com.shoeshub.features.order.service.OrderService orderService = ServiceProvider.getOrderService(authorizationService);
+    private static final PaymentController paymentController = ServiceProvider.getPaymentController(security, orderService);
+    private static final OrderController orderController = ServiceProvider.getOrderController(authorizationService, paymentController);
     private static final ReviewController reviewController = new ReviewController();
     private static final ReportController reportController = new ReportController();
 
     // UI
     private static final AuthUI authUI = new AuthUI(security, authService, userController);
     private static final UserUI userUI = new UserUI(security, userController);
-    private static final CartUI cartUI = new CartUI(cartController, orderController);
+    private static final CartUI cartUI = new CartUI(cartController, orderController, paymentController);
     private static final WishlistUI wishlistUI = new WishlistUI(wishlistController);
 
     /**

@@ -136,7 +136,16 @@ public class ServiceProvider {
         return new OrderController(authorizationService, orderService);
     }
 
+    public static OrderController getOrderController(AuthorizationService authorizationService, PaymentController paymentController) {
+        OrderService orderService = getOrderService(authorizationService);
+        return new OrderController(authorizationService, orderService, paymentController);
+    }
+
     public static PaymentController getPaymentController(Security security) {
         return new PaymentController(security);
+    }
+
+    public static PaymentController getPaymentController(Security security, OrderService orderService) {
+        return new PaymentController(security, orderService);
     }
 }
