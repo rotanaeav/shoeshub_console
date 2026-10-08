@@ -148,4 +148,16 @@ public class ServiceProvider {
     public static PaymentController getPaymentController(Security security, OrderService orderService) {
         return new PaymentController(security, orderService);
     }
+
+    public static kh.com.shoeshub.features.review.ReviewController getReviewController(AuthorizationService authorizationService) {
+        var products = new kh.com.shoeshub.features.product.repository.ProductRepositoryImpl();
+        var reviews = new kh.com.shoeshub.features.review.repository.ReviewRepositoryImpl();
+        var service = new kh.com.shoeshub.features.review.service.ReviewServiceImpl(reviews, products, authorizationService);
+        return new kh.com.shoeshub.features.review.ReviewController(service, products);
+    }
+    public static kh.com.shoeshub.features.report.ReportController getReportController(AuthorizationService authorizationService) {
+        var repository = new kh.com.shoeshub.features.report.repository.ReportRepositoryImpl();
+        var service = new kh.com.shoeshub.features.report.service.ReportServiceImpl(repository, authorizationService);
+        return new kh.com.shoeshub.features.report.ReportController(service);
+    }
 }
