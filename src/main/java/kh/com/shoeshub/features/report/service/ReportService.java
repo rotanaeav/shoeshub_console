@@ -1,5 +1,11 @@
 package kh.com.shoeshub.features.report.service;
 
+import java.nio.file.Path;
+import kh.com.shoeshub.features.report.dto.CreateReportRequest;
+import kh.com.shoeshub.features.report.dto.CreateReportRequest.ReportData;
+
 public interface ReportService {
-    // TODO: Define reporting & analytics service methods (e.g. getRevenueReport, exportSalesReportToCsv)
+  ReportData getRevenueReport(CreateReportRequest request);
+
+  Path exportSalesReportToCsv(CreateReportRequest request);
 }

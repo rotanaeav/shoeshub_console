@@ -20,4 +20,6 @@ public class Review {
     private String comment;
     private boolean deleted;
     private Timestamp createdAt;
+    private String userName;
+    private String productName;
 }

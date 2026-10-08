@@ -1,5 +1,5 @@
 package kh.com.shoeshub.features.review.dto;
 
-public class CreateReviewRequest {
-    // TODO: Define review request fields (e.g. productId, rating, comment)
-}
+import java.util.UUID;
+
+public record CreateReviewRequest(UUID productId, short rating, String comment) {}
