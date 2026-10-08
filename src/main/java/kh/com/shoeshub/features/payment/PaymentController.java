@@ -117,12 +117,24 @@ public class PaymentController {
     public Payment processOrderPayment(UUID orderId, UUID customerId) {
         PaymentMethod method = InputUtil.readEnum("Payment Method", PaymentMethod.class);
 
+        boolean isStaff = security != null && security.isAuthenticated()
+                && (security.getCurrentUser().role() == kh.com.shoeshub.features.user.UserRole.ADMIN
+                || security.getCurrentUser().role() == kh.com.shoeshub.features.user.UserRole.SELLER);
+
         boolean confirmed = false;
         if (method == PaymentMethod.CASH) {
-            confirmed = InputUtil.readConfirm("Confirm cash received?");
+            if (isStaff) {
+                confirmed = InputUtil.readConfirm("Confirm cash received?");
+            } else {
+                confirmed = InputUtil.readConfirm("Pay with Cash ?");
+            }
         } else if (method == PaymentMethod.KHQR) {
             paymentUI.displayKhqrReference();
-            confirmed = InputUtil.readConfirm("Did the customer pay?");
+            if (isStaff) {
+                confirmed = InputUtil.readConfirm("Did the customer complete the payment?");
+            } else {
+                confirmed = InputUtil.readConfirm("Confirm payment via KHQR?");
+            }
         }
 
         try {
