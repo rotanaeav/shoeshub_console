@@ -13,12 +13,20 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import kh.com.shoeshub.features.order.OrderController;
+
 public class CartUI {
 
     private final CartController cartController;
+    private final OrderController orderController;
+
+    public CartUI(CartController cartController, OrderController orderController) {
+        this.cartController = cartController;
+        this.orderController = orderController;
+    }
 
     public CartUI(CartController cartController) {
-        this.cartController = cartController;
+        this(cartController, null);
     }
 
     public void showCartMenu(UUID userId) {
@@ -31,10 +39,11 @@ public class CartUI {
                     [3] Update Quantity
                     [4] Remove From Cart
                     [5] Clear Cart
+                    [6] Proceed to Checkout
                     [0] Back
                     """);
 
-            int choice = InputUtil.readInt("Choose menu", 0, 5);
+            int choice = InputUtil.readInt("Choose menu", 0, 6);
 
             try {
                 switch (choice) {
@@ -43,6 +52,7 @@ public class CartUI {
                     case 3 -> updateQuantity(userId);
                     case 4 -> removeFromCart(userId);
                     case 5 -> clearCart(userId);
+                    case 6 -> checkout(userId);
                     case 0 -> {
                         return;
                     }
@@ -61,10 +71,47 @@ public class CartUI {
 
         if (cartItems.isEmpty()) {
             OutputUtil.printInfo("Your cart is empty.");
+            InputUtil.pressEnter();
             return;
         }
 
         renderCartTable(cartItems);
+        InputUtil.pressEnter();
+    }
+
+    private void checkout(UUID userId) {
+        OutputUtil.printHeader("PROCEED TO CHECKOUT");
+
+        List<CartItemResponse> cartItems = cartController.getMyCart(userId);
+        if (cartItems.isEmpty()) {
+            OutputUtil.printWarning("Your cart is empty. Please add items before checking out.");
+            InputUtil.pressEnter();
+            return;
+        }
+
+        renderCartTable(cartItems);
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (CartItemResponse item : cartItems) {
+            BigDecimal itemTotal = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+            total = total.add(itemTotal);
+        }
+
+        OutputUtil.println("Total Items : " + cartItems.size());
+        OutputUtil.println("Total Amount: " + ColorUtil.BOLD + "$" + String.format("%.2f", total) + ColorUtil.RESET);
+
+        boolean confirm = InputUtil.readConfirm("Do you want to confirm checkout?");
+        if (!confirm) {
+            OutputUtil.println("Checkout cancelled.");
+            return;
+        }
+
+        if (orderController != null) {
+            orderController.handleCheckout(userId);
+        } else {
+            OutputUtil.printError("Order service is currently unavailable.");
+        }
+        InputUtil.pressEnter();
     }
 
     private void addToCart(UUID userId) {

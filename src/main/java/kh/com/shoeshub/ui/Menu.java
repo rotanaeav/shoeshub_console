@@ -44,7 +44,7 @@ public class Menu {
     // UI
     private static final AuthUI authUI = new AuthUI(security, authService, userController);
     private static final UserUI userUI = new UserUI(security, userController);
-    private static final CartUI cartUI = new CartUI(cartController);
+    private static final CartUI cartUI = new CartUI(cartController, orderController);
     private static final WishlistUI wishlistUI = new WishlistUI(wishlistController);
 
     /**
@@ -94,12 +94,12 @@ public class Menu {
     public static void displayCustomerMenu() {
         while (true) {
             OutputUtil.printHeader("CUSTOMER DASHBOARD");
-            OutputUtil.println(" [1] Browse Shoes Catalog");
-            OutputUtil.println(" [2] My Shopping Cart & Checkout");
-            OutputUtil.println(" [3] My Wishlist");
-            OutputUtil.println(" [4] My Orders & Order History");
-            OutputUtil.println(" [5] Payment Simulation & History");
-            OutputUtil.println(" [6] Product Reviews & Rating");
+            OutputUtil.println(" [1] Browse Products");
+            OutputUtil.println(" [2] Shopping Cart");
+            OutputUtil.println(" [3] Wishlist");
+            OutputUtil.println(" [4] My Orders");
+            OutputUtil.println(" [5] Payment History");
+            OutputUtil.println(" [6] Product Reviews");
             OutputUtil.println(" [7] My Profile");
             OutputUtil.println(" [8] Search Products");
             OutputUtil.println(" [9] Filter by Category");
@@ -130,11 +130,11 @@ public class Menu {
     public static void displayAdminMenu() {
         while (true) {
             OutputUtil.printHeader("ADMIN DASHBOARD");
-            OutputUtil.println(" [1] User Management (Create Admin/Seller, Manage Accounts)");
-            OutputUtil.println(" [2] Product Management (CRUD & Stock)");
+            OutputUtil.println(" [1] User Management");
+            OutputUtil.println(" [2] Product Management");
             OutputUtil.println(" [3] Category Management");
-            OutputUtil.println(" [4] Order Management & Status Updates");
-            OutputUtil.println(" [5] Sales Reports & Revenue Analytics");
+            OutputUtil.println(" [4] Order Management");
+            OutputUtil.println(" [5] Reports & Analytics");
             OutputUtil.println(" [6] My Profile");
             OutputUtil.println(" [0] Logout");
 
@@ -144,7 +144,7 @@ public class Menu {
                 case 1 -> userUI.handleUserManagement(); // Admin-only privilege!
                 case 2 -> productController.showMenu();
                 case 3 -> categoryController.showMenu();
-                case 4 -> orderController.handleUpdateOrderStatus();
+                case 4 -> orderController.handleOrderManagement();
                 case 5 -> reportController.handleViewRevenue();
                 case 6 -> userUI.handleViewProfile();
                 case 0 -> {
@@ -160,10 +160,10 @@ public class Menu {
     public static void displaySellerMenu() {
         while (true) {
             OutputUtil.printHeader("SELLER DASHBOARD");
-            OutputUtil.println(" [1] Product Management (CRUD & Stock)");
+            OutputUtil.println(" [1] Product Management");
             OutputUtil.println(" [2] Category Management");
-            OutputUtil.println(" [3] Order Management & Status Updates");
-            OutputUtil.println(" [4] Sales Reports & Revenue Analytics");
+            OutputUtil.println(" [3] Order Management");
+            OutputUtil.println(" [4] Reports & Analytics");
             OutputUtil.println(" [5] My Profile");
             OutputUtil.println(" [0] Logout");
 
@@ -172,7 +172,7 @@ public class Menu {
             switch (choice) {
                 case 1 -> productController.showMenu();
                 case 2 -> categoryController.showMenu();
-                case 3 -> orderController.handleUpdateOrderStatus();
+                case 3 -> orderController.handleOrderManagement();
                 case 4 -> reportController.handleViewRevenue();
                 case 5 -> userUI.handleViewProfile();
                 case 0 -> {
