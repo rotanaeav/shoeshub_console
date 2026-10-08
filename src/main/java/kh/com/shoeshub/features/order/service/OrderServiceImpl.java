@@ -259,4 +259,10 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Failed to update status for order: " + orderId);
         }
     }
+
+    @Override
+    public Order getOrderById(UUID orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found with ID: " + orderId));
+    }
 }
