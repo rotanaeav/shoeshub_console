@@ -44,7 +44,7 @@ public class Menu {
     // UI
     private static final AuthUI authUI = new AuthUI(security, authService, userController);
     private static final UserUI userUI = new UserUI(security, userController);
-    private static final CartUI cartUI = new CartUI(cartController);
+    private static final CartUI cartUI = new CartUI(cartController, orderController);
     private static final WishlistUI wishlistUI = new WishlistUI(wishlistController);
 
     /**
@@ -144,7 +144,7 @@ public class Menu {
                 case 1 -> userUI.handleUserManagement(); // Admin-only privilege!
                 case 2 -> productController.showMenu();
                 case 3 -> categoryController.showMenu();
-                case 4 -> orderController.handleUpdateOrderStatus();
+                case 4 -> orderController.handleOrderManagement();
                 case 5 -> reportController.handleViewRevenue();
                 case 6 -> userUI.handleViewProfile();
                 case 0 -> {
@@ -172,7 +172,7 @@ public class Menu {
             switch (choice) {
                 case 1 -> productController.showMenu();
                 case 2 -> categoryController.showMenu();
-                case 3 -> orderController.handleUpdateOrderStatus();
+                case 3 -> orderController.handleOrderManagement();
                 case 4 -> reportController.handleViewRevenue();
                 case 5 -> userUI.handleViewProfile();
                 case 0 -> {
