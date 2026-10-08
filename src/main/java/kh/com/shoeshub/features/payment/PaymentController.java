@@ -1,5 +1,6 @@
 package kh.com.shoeshub.features.payment;
 
+import kh.com.shoeshub.authorize.Security;
 import kh.com.shoeshub.exception.AppException;
 import kh.com.shoeshub.features.payment.dto.CreatePaymentRequest;
 import kh.com.shoeshub.features.payment.export.PaymentCsvExporter;
@@ -20,10 +21,15 @@ public class PaymentController {
     private final PaymentService paymentService = new PaymentServiceImpl();
     private final PaymentUI paymentUI = new PaymentUI();
     private final PaymentCsvExporter csvExporter = new PaymentCsvExporter();
+    private final Security security;
 
     private static final DateTimeFormatter FILE_TIMESTAMP = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
-    /** Shows the payment menu loop. */
+    public PaymentController(Security security) {
+        this.security = security;
+    }
+
+    /** Shows the customer payment menu loop. */
     public void handleViewTransactionHistory() {
         while (true) {
             paymentUI.displayPaymentMenu();
@@ -39,11 +45,25 @@ public class PaymentController {
         }
     }
 
-    // TODO: replace with session when Auth is done
+    /** Shows the admin payment management menu loop. */
+    public void handleAdminPaymentMenu() {
+        while (true) {
+            paymentUI.displayAdminPaymentMenu();
+            int choice = InputUtil.readInt("Select an option", 0, 3);
+            switch (choice) {
+                case 1 -> handleViewAllPayments();
+                case 2 -> handleFilterPaymentsByStatus();
+                case 3 -> handleExportAllPayments();
+                case 0 -> {
+                    return;
+                }
+            }
+        }
+    }
 
-    // Returns a fixed test customer until Auth is merged.
+    /** Returns the current logged-in user's ID from the session. */
     private UUID getCurrentCustomerId() {
-        return UUID.fromString("c0000000-0000-0000-0000-000000000001");
+        return security.getCurrentUser().id();
     }
 
     /** Prompts for payment details and processes the payment. */

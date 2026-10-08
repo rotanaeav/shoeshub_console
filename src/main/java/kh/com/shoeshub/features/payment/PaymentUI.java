@@ -10,12 +10,21 @@ import java.util.UUID;
 /* UI class that only prints text to the console. Layer: View. */
 public class PaymentUI {
 
-    /* Displays the payment menu options. */
+    /* Displays the payment menu options for customers. */
     public void displayPaymentMenu() {
-        OutputUtil.printHeader("Payment Menu");
+        OutputUtil.printHeader("Payment");
         OutputUtil.println(" [1] Pay for an Order");
         OutputUtil.println(" [2] View My Payments");
         OutputUtil.println(" [3] Export My Payments to CSV");
+        OutputUtil.println(" [0] Back");
+    }
+
+    /* Displays the payment management menu for admins and sellers. */
+    public void displayAdminPaymentMenu() {
+        OutputUtil.printHeader("Payment Management");
+        OutputUtil.println(" [1] View All Payments");
+        OutputUtil.println(" [2] Filter by Status");
+        OutputUtil.println(" [3] Export All Payments to CSV");
         OutputUtil.println(" [0] Back");
     }
 

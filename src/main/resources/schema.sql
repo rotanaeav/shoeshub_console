@@ -51,6 +51,9 @@ CREATE TABLE categories
 ALTER TABLE categories OWNER TO postgres;
 
 -- 3. Products Table
+-- SKU generator for products (SH-0001, SH-0002, ...)
+CREATE SEQUENCE product_sku_seq START 1;
+ALTER SEQUENCE product_sku_seq OWNER TO postgres;
 CREATE TABLE products
 (
     id          UUID                     DEFAULT gen_random_uuid() NOT NULL
