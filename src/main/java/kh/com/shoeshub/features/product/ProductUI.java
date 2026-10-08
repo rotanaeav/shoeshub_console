@@ -18,18 +18,18 @@ public class ProductUI {
 
         OutputUtil.printHeader("PRODUCT MANAGEMENT");
         OutputUtil.println("""
-            [1]  LIST ALL PRODUCT
-            [2]  SEARCH PRODUCTS BY NAME
-            [3]  FILTER BY CATEGORY
-            [4]  VIEW PRODUCT DETAILS
-            [5]  ADD PRODUCT
-            [6]  UPDATE PRODUCT
-            [7]  DELETE PRODUCT
-            [8]  ADD VARIANT (size / color / stock)
-            [9]  UPDATE STOCK
-            [10] TOGGLE ACTIVE / INACTIVE
-            [11] DELETE VARIANT
-            [0]  BACK
+            [1]  List All Products
+            [2]  Search Products
+            [3]  Filter by Category
+            [4]  View Product Details
+            [5]  Add Product
+            [6]  Update Product
+            [7]  Delete Product
+            [8]  Add Product Variant
+            [9]  Update Stock
+            [10] Toggle Active Status
+            [11] Delete Variant
+            [0]  Back
             """);
 
         return InputUtil.readInt("Choose an option", 0, 11);

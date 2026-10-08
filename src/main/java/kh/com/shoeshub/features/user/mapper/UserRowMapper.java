@@ -25,6 +25,7 @@ public class UserRowMapper implements RowMapper<User> {
         user.setDateOfBirth(rs.getObject("date_of_birth", LocalDate.class));
         user.setGender(rs.getString("gender"));
         user.setAddress(rs.getString("address"));
+        user.setActive(rs.getBoolean("is_active"));
         user.setDeleted(rs.getBoolean("is_deleted"));
         user.setCreatedAt(rs.getTimestamp("created_at"));
 

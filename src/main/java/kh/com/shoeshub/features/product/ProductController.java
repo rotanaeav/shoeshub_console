@@ -69,9 +69,9 @@ public class ProductController {
 
     // ------------------------------------------------- customer / guest browse
 
-    // Guest browse (no login required)
+    // Guest browse (display active products catalog only, no selection prompt)
     public void handleBrowseProducts() {
-        handleBrowseProducts(null);
+        run(() -> showProducts(productService.getActiveProducts(), false));
     }
 
     // Customer browse: active products only, no STATUS column
