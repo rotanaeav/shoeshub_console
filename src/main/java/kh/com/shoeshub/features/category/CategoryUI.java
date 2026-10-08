@@ -11,11 +11,11 @@ import java.util.List;
 public class CategoryUI {
 
     public void displayCategoryMenu() {
-        OutputUtil.printHeader("Category Management");
-        OutputUtil.println(" [1] List categories");
-        OutputUtil.println(" [2] Add category");
-        OutputUtil.println(" [3] Update category");
-        OutputUtil.println(" [4] Delete category");
+        OutputUtil.printHeader("CATEGORY MANAGEMENT");
+        OutputUtil.println(" [1] List Categories");
+        OutputUtil.println(" [2] Add Category");
+        OutputUtil.println(" [3] Update Category");
+        OutputUtil.println(" [4] Delete Category");
         OutputUtil.println(" [0] Back");
     }
 
