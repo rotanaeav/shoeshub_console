@@ -1,5 +1,6 @@
 package kh.com.shoeshub.features.user;
 
+import kh.com.shoeshub.authorize.Security;
 import kh.com.shoeshub.features.user.dto.CreateUserRequest;
 import kh.com.shoeshub.features.user.dto.UpdateUserRequest;
 import kh.com.shoeshub.features.user.dto.UserResponse;
@@ -14,9 +15,11 @@ import java.util.List;
 import java.util.UUID;
 
 public class UserUI {
+    private final Security security;
     private  final UserController userController;
 
-    public UserUI(UserController userController) {
+    public UserUI(Security security, UserController userController) {
+        this.security = security;
         this.userController = userController;
     }
 
