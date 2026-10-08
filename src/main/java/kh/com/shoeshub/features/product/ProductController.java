@@ -118,14 +118,18 @@ public class ProductController {
                 
                 [1] Add to Cart
                 [2] Add to Wishlist
+                [3] View Reviews & Rating
+                [4] Write Review
                 [0] Back
                 """);
 
-            int choice = InputUtil.readInt("Choose option", 0, 2);
+            int choice = InputUtil.readInt("Choose option", 0, 4);
 
             switch (choice) {
                 case 1 -> handleAddToCart(product, variants, userId);
                 case 2 -> handleAddToWishlist(product, userId);
+                case 3 -> kh.com.shoeshub.config.ServiceProvider.getReviewController(authorizationService).showProductReviews(product.getId());
+                case 4 -> kh.com.shoeshub.config.ServiceProvider.getReviewController(authorizationService).addReview(product.getId());
                 case 0 -> {
                     return;
                 }

@@ -39,8 +39,8 @@ public class Menu {
     private static final kh.com.shoeshub.features.order.service.OrderService orderService = ServiceProvider.getOrderService(authorizationService);
     private static final PaymentController paymentController = ServiceProvider.getPaymentController(security, orderService);
     private static final OrderController orderController = ServiceProvider.getOrderController(authorizationService, paymentController);
-    private static final ReviewController reviewController = new ReviewController();
-    private static final ReportController reportController = new ReportController();
+    private static final ReviewController reviewController = ServiceProvider.getReviewController(authorizationService);
+    private static final ReportController reportController = ServiceProvider.getReportController(authorizationService);
 
     // UI
     private static final AuthUI authUI = new AuthUI(security, authService, userController);
@@ -60,15 +60,17 @@ public class Menu {
             OutputUtil.println(" [2] Search Products");
             OutputUtil.println(" [3] Login");
             OutputUtil.println(" [4] Register");
+            OutputUtil.println(" [5] Product Reviews & Ratings");
             OutputUtil.println(" [0] Exit Application");
 
-            int choice = InputUtil.readInt("Choose menu", 0, 4);
+            int choice = InputUtil.readInt("Choose menu", 0, 5);
 
             switch (choice) {
                 case 1 -> productController.handleBrowseProducts();
                 case 2 -> productController.handleSearchProducts();
                 case 3 -> handleLogin();
                 case 4 -> authUI.handleRegister();
+                case 5 -> reviewController.handleViewProductReviews();
                 case 0 -> {
                     OutputUtil.printSuccess("Thank you. Goodbye!");
                     return;
@@ -114,7 +116,7 @@ public class Menu {
                 case 3 -> wishlistUI.showWishlistMenu();
                 case 4 -> orderController.handleViewOrderHistory();
                 case 5 -> paymentController.handleViewTransactionHistory();
-                case 6 -> reviewController.handleAddReview();
+                case 6 -> reviewController.showMenu();
                 case 7 -> userUI.handleViewProfile();
                 case 8 -> productController.handleSearchProducts();
                 case 9 -> productController.handleFilterByCategory();
@@ -138,9 +140,10 @@ public class Menu {
             OutputUtil.println(" [5] Payment Management");
             OutputUtil.println(" [6] Reports & Analytics");
             OutputUtil.println(" [7] My Profile");
+            OutputUtil.println(" [8] Review Moderation");
             OutputUtil.println(" [0] Logout");
 
-            int choice = InputUtil.readInt("Choose menu", 0, 7);
+            int choice = InputUtil.readInt("Choose menu", 0, 8);
 
             switch (choice) {
                 case 1 -> userUI.handleUserManagement(); // Admin-only privilege!
@@ -148,8 +151,9 @@ public class Menu {
                 case 3 -> categoryController.showMenu();
                 case 4 -> orderController.handleOrderManagement();
                 case 5 -> paymentController.handleAdminPaymentMenu();
-                case 6 -> reportController.handleViewRevenue();
+                case 6 -> reportController.showMenu();
                 case 7 -> userUI.handleViewProfile();
+                case 8 -> reviewController.showAdminMenu();
                 case 0 -> {
                     security.logout();
                     OutputUtil.printInfo("Logged out successfully.");
@@ -167,7 +171,7 @@ public class Menu {
             OutputUtil.println(" [2] Category Management");
             OutputUtil.println(" [3] Order Management");
             OutputUtil.println(" [4] Payment Management");
-            OutputUtil.println(" [5] Reports & Analytics");
+            OutputUtil.println(" [5] View Product Reviews");
             OutputUtil.println(" [6] My Profile");
             OutputUtil.println(" [0] Logout");
 
@@ -178,7 +182,7 @@ public class Menu {
                 case 2 -> categoryController.showMenu();
                 case 3 -> orderController.handleOrderManagement();
                 case 4 -> paymentController.handleAdminPaymentMenu();
-                case 5 -> reportController.handleViewRevenue();
+                case 5 -> reviewController.handleViewProductReviews();
                 case 6 -> userUI.handleViewProfile();
                 case 0 -> {
                     security.logout();
